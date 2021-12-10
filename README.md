@@ -22,26 +22,26 @@ Help Options:
 
  - `GET /status` - returns server status
 
-    response:
-    ```json
-    {
-      "hostname": "UMBP.localdomain",
-      "procs": 685,
-      "host_id": "021af95f-69ca-5ae2-8725-5739eca1b094",
-      "cpu_percent": 12,
-      "volumes": [
-        {
-          "name": "root",
-          "path": "/",
-          "usage_percent": 33
-        },
-        {
-          "name": "data",
-          "path": "/mnt/data",
-          "usage_percent": 67
+   ```json
+   {
+     "hostname": "UMBP.localdomain",
+     "procs": 697,
+     "host_id": "021cd85f-69cc-5ae1-9725-5836eca1b092",
+     "cpu_percent": 11,
+     "mem_percent": 51,
+     "volumes": {
+       "root": {
+         "name": "root",
+         "path": "/",
+         "usage_percent": 33
+       },
+        "data": {
+           "name": "data",
+           "path": "/mnt/data",
+           "usage_percent": 87
         }
-      ]
-    }
-    
-    ```
+     }
+   }
+   ```
+
  - `GET /ping` - returns `pong`

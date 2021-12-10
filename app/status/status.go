@@ -6,6 +6,7 @@ import (
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/host"
+	"github.com/shirou/gopsutil/v3/mem"
 )
 
 // Service provides disk and cpu utilization
@@ -19,6 +20,7 @@ type Info struct {
 	Procs      int               `json:"procs"`
 	HostID     string            `json:"host_id"`
 	CPUPercent int               `json:"cpu_percent"`
+	MemPercent int               `json:"mem_percent"`
 	Volumes    map[string]Volume `json:"volumes,omitempty"`
 }
 
@@ -36,6 +38,11 @@ func (s Service) Get() (*Info, error) {
 		return nil, fmt.Errorf("failed to get cpu percent: %w", err)
 	}
 
+	memp, err := mem.VirtualMemory()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get memory percent: %w", err)
+	}
+
 	hostStat, err := host.Info()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get host info: %w", err)
@@ -45,6 +52,7 @@ func (s Service) Get() (*Info, error) {
 		Procs:      int(hostStat.Procs),
 		HostID:     hostStat.HostID,
 		CPUPercent: int(cpup[0]),
+		MemPercent: int(memp.UsedPercent),
 		Volumes:    map[string]Volume{},
 	}
 
