@@ -20,4 +20,5 @@ RUN \
 FROM ghcr.io/umputun/baseimage/app:v1.7.0
 COPY --from=build /build/sys-agent /srv/sys-agent
 WORKDIR /srv
+EXPOSE 8080
 CMD ["/srv/sys-agent"]
