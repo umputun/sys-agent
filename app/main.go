@@ -73,13 +73,13 @@ func main() {
 
 // parseVolumes parses volumes from string list, each element in format "name:path"
 func parseVolumes(volumes []string) ([]status.Volume, error) {
-	var res []status.Volume
-	for _, v := range volumes {
+	res := make([]status.Volume, len(volumes))
+	for i, v := range volumes {
 		parts := strings.SplitN(v, ":", 2)
 		if len(parts) != 2 {
 			return nil, errors.New("invalid volume format, should be <name>:<path>")
 		}
-		res = append(res, status.Volume{Name: parts[0], Path: parts[1]})
+		res[i] = status.Volume{Name: parts[0], Path: parts[1]}
 	}
 	return res, nil
 }
