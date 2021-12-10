@@ -79,6 +79,7 @@ func parseVolumes(volumes []string) ([]status.Volume, error) {
 		}
 		res[i] = status.Volume{Name: parts[0], Path: parts[1]}
 	}
+	log.Printf("[DEBUG] volumes: %+v", res)
 	return res, nil
 }
 
