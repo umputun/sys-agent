@@ -15,11 +15,11 @@ type Service struct {
 
 // Info contains disk and cpu utilization results
 type Info struct {
-	HostName   string   `json:"hostname"`
-	Procs      int      `json:"procs"`
-	HostID     string   `json:"host_id"`
-	CPUPercent int      `json:"cpu_percent"`
-	Volumes    []Volume `json:"volumes,omitempty"`
+	HostName   string            `json:"hostname"`
+	Procs      int               `json:"procs"`
+	HostID     string            `json:"host_id"`
+	CPUPercent int               `json:"cpu_percent"`
+	Volumes    map[string]Volume `json:"volumes,omitempty"`
 }
 
 // Volume contains input information for a volume and the result for utilization percentage
@@ -45,6 +45,7 @@ func (s Service) Get() (*Info, error) {
 		Procs:      int(hostStat.Procs),
 		HostID:     hostStat.HostID,
 		CPUPercent: int(cpup[0]),
+		Volumes:    map[string]Volume{},
 	}
 
 	for _, v := range s.Volumes {
@@ -52,11 +53,11 @@ func (s Service) Get() (*Info, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to get disk usage for %s: %w", v.Path, err)
 		}
-		res.Volumes = append(res.Volumes, Volume{
+		res.Volumes[v.Name] = Volume{
 			Name:         v.Name,
 			Path:         v.Path,
 			UsagePercent: int(usage.UsedPercent),
-		})
+		}
 	}
 	return &res, nil
 }

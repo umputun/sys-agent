@@ -26,7 +26,7 @@ func TestRest_Run(t *testing.T) {
 func TestParseVolumes(t *testing.T) {
 	sts := &StatusMock{
 		GetFunc: func() (*status.Info, error) {
-			return &status.Info{CPUPercent: 12, Volumes: []status.Volume{{Name: "v1", Path: "/p1", UsagePercent: 5}}}, nil
+			return &status.Info{CPUPercent: 12, Volumes: map[string]status.Volume{"v1": {Name: "v1", Path: "/p1", UsagePercent: 5}}}, nil
 		},
 	}
 	srv := Rest{Listen: "localhost:54009", Status: sts, Version: "v1"}

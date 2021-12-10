@@ -12,7 +12,7 @@ func TestService_Get(t *testing.T) {
 	res, err := svc.Get()
 	require.NoError(t, err)
 	assert.Equal(t, 1, len(res.Volumes))
-	assert.Equal(t, "root", res.Volumes[0].Name)
-	assert.Equal(t, "/", res.Volumes[0].Path)
-	assert.True(t, res.Volumes[0].UsagePercent > 0)
+	assert.Equal(t, "root", res.Volumes["root"].Name)
+	assert.Equal(t, "/", res.Volumes["root"].Path)
+	assert.True(t, res.Volumes["root"].UsagePercent > 0)
 }
