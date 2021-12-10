@@ -19,7 +19,6 @@ import (
 var revision string
 
 var opts struct {
-	Config  string   `short:"f" long:"file" env:"CONF" default:"sys-agent.yml" description:"config file"`
 	Listen  string   `short:"l" long:"listen" env:"LISTEN" default:"localhost:8080" description:"listen on host:port"`
 	Volumes []string `short:"v" long:"volume" env:"VOLUMES" default:"root:/" env-delim:"," description:"volumes to report"`
 	Dbg     bool     `long:"dbg" env:"DEBUG" description:"show debug info"`
@@ -59,11 +58,10 @@ func main() {
 		log.Fatalf("[ERROR] %s", err)
 	}
 
-	sts := &status.Service{Volumes: vols}
 	srv := server.Rest{
 		Listen:  opts.Listen,
 		Version: revision,
-		Status:  sts,
+		Status:  &status.Service{Volumes: vols},
 	}
 
 	if err := srv.Run(ctx); err != nil && err.Error() != "http: Server closed" {
