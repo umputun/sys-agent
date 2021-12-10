@@ -1,2 +1,3 @@
 # sys-agent
-System agents reports server status via HTTP api
+
+System agent is a simple service reporting server status via HTTP GET request.

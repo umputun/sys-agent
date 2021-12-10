@@ -1,0 +1,5 @@
+### ping
+GET http://localhost:8080/ping
+
+### get status
+GET  http://localhost:8080/status
