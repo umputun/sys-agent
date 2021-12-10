@@ -44,4 +44,4 @@ Help Options:
     }
     
     ```
- - `GET /pinh` - returns pong
+ - `GET /ping` - returns `pong`
