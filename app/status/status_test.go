@@ -16,7 +16,6 @@ func TestService_Get(t *testing.T) {
 	assert.Equal(t, "root", res.Volumes["root"].Name)
 	assert.Equal(t, "/", res.Volumes["root"].Path)
 	assert.True(t, res.Volumes["root"].UsagePercent > 0)
-	assert.True(t, res.CPUPercent > 0)
 	assert.True(t, res.MemPercent > 0)
 	assert.True(t, res.Loads.One > 0)
 	assert.True(t, res.Uptime > 0)
