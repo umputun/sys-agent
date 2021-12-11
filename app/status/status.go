@@ -6,6 +6,7 @@ import (
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/host"
+	"github.com/shirou/gopsutil/v3/load"
 	"github.com/shirou/gopsutil/v3/mem"
 )
 
@@ -21,7 +22,13 @@ type Info struct {
 	HostID     string            `json:"host_id"`
 	CPUPercent int               `json:"cpu_percent"`
 	MemPercent int               `json:"mem_percent"`
+	Uptime     uint64            `json:"uptime"`
 	Volumes    map[string]Volume `json:"volumes,omitempty"`
+	Loads      struct {
+		One     float64 `json:"one"`
+		Five    float64 `json:"five"`
+		Fifteen float64 `json:"fifteen"`
+	} `json:"load_average"`
 }
 
 // Volume contains input information for a volume and the result for utilization percentage
@@ -47,6 +54,12 @@ func (s Service) Get() (*Info, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get host info: %w", err)
 	}
+
+	loads, err := load.Avg()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get load average: %w", err)
+	}
+
 	res := Info{
 		HostName:   hostStat.Hostname,
 		Procs:      int(hostStat.Procs),
@@ -54,7 +67,9 @@ func (s Service) Get() (*Info, error) {
 		CPUPercent: int(cpup[0]),
 		MemPercent: int(memp.UsedPercent),
 		Volumes:    map[string]Volume{},
+		Uptime:     hostStat.Uptime,
 	}
+	res.Loads.One, res.Loads.Five, res.Loads.Fifteen = loads.Load1, loads.Load5, loads.Load15
 
 	for _, v := range s.Volumes {
 		usage, err := disk.Usage(v.Path)

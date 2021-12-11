@@ -29,6 +29,7 @@ Help Options:
      "host_id": "021cd85f-69cc-5ae1-9725-5836eca1b092",
      "cpu_percent": 11,
      "mem_percent": 51,
+     "uptime": 517719000000000,
      "volumes": {
        "root": {
          "name": "root",
@@ -40,7 +41,12 @@ Help Options:
            "path": "/mnt/data",
            "usage_percent": 87
         }
-     }
+     },
+    "load_average": {
+      "one": 2.27294921875,
+      "five": 3.52978515625,
+      "fifteen": 3.76171875
+    }
    }
    ```
 
