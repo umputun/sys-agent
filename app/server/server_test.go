@@ -23,7 +23,7 @@ func TestRest_Run(t *testing.T) {
 	assert.Equal(t, "http: Server closed", err.Error())
 }
 
-func TestParseVolumes(t *testing.T) {
+func TestStatusCtrl(t *testing.T) {
 	sts := &StatusMock{
 		GetFunc: func() (*status.Info, error) {
 			return &status.Info{CPUPercent: 12, Volumes: map[string]status.Volume{"v1": {Name: "v1", Path: "/p1", UsagePercent: 5}}}, nil
@@ -42,6 +42,9 @@ func TestParseVolumes(t *testing.T) {
 	require.NoError(t, err)
 	t.Log(string(body))
 	assert.Contains(t, string(body), `"volumes":`, string(body))
+	assert.Contains(t, string(body), `"mem_percent":`, string(body))
 	assert.Contains(t, string(body), `"cpu_percent":`, string(body))
+	assert.Contains(t, string(body), `"uptime":`, string(body))
+	assert.Contains(t, string(body), `"load_average":`, string(body))
 	assert.Equal(t, 1, len(sts.GetCalls()))
 }
