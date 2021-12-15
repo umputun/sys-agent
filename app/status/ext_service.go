@@ -3,6 +3,7 @@ package status
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"sort"
@@ -69,17 +70,29 @@ func (es *ExtServices) Status() []ExtServiceResp {
 			st := time.Now()
 			res, err := client.Get(s.URL)
 			if err != nil {
+				log.Printf("[WARN] ext_service request failed: %s %s: %v", s.Name, s.URL, err)
 				ch <- ExtServiceResp{Name: s.Name, StatusCode: http.StatusInternalServerError}
 				return
 			}
 			defer res.Body.Close()
 
-			var body map[string]interface{}
-			if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
+			bodyStr, err := io.ReadAll(res.Body)
+			if err != nil {
+				log.Printf("[WARN] ext_service read failed: %s %s: %v", s.Name, s.URL, err)
 				ch <- ExtServiceResp{Name: s.Name, StatusCode: http.StatusInternalServerError}
 				return
 			}
-			resp := ExtServiceResp{Name: s.Name, StatusCode: res.StatusCode, ResponseTime: time.Since(st).Milliseconds(), Body: body}
+
+			var bodyJson map[string]interface{}
+			if err := json.Unmarshal(bodyStr, &bodyJson); err != nil {
+				bodyJson = map[string]interface{}{"text": string(bodyStr)}
+			}
+			resp := ExtServiceResp{
+				Name:         s.Name,
+				StatusCode:   res.StatusCode,
+				ResponseTime: time.Since(st).Milliseconds(),
+				Body:         bodyJson,
+			}
 			ch <- resp
 			log.Printf("[DEBUG] ext_service reposne: %s:%s %+v", s.Name, s.URL, resp)
 		})

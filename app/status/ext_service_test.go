@@ -51,3 +51,27 @@ func TestExtServices_StatusMany(t *testing.T) {
 	res := svc.Status()
 	assert.Equal(t, 100, len(res))
 }
+
+func TestExtServices_StatusNoJosn(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(time.Millisecond * 10)
+		w.WriteHeader(http.StatusOK)
+		_, e := w.Write([]byte(`pong`))
+		require.NoError(t, e)
+
+	}))
+
+	svc := NewExtServices(time.Second, 4, "e1:"+ts.URL+"/status1", "e2:"+ts.URL+"/status2")
+	res := svc.Status()
+	assert.Equal(t, 2, len(res))
+
+	assert.Equal(t, "e1", res[0].Name)
+	assert.Equal(t, 200, res[0].StatusCode)
+	assert.True(t, res[0].ResponseTime > 0)
+	assert.Equal(t, map[string]interface{}{"text": "pong"}, res[0].Body)
+
+	assert.Equal(t, "e2", res[1].Name)
+	assert.Equal(t, 200, res[1].StatusCode)
+	assert.True(t, res[1].ResponseTime > 0)
+	assert.Equal(t, map[string]interface{}{"text": "pong"}, res[1].Body)
+}
