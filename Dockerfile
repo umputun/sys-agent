@@ -1,4 +1,4 @@
-FROM umputun/baseimage:buildgo-v1.7.0  as build
+FROM umputun/baseimage:buildgo-v1.8.0  as build
 
 ARG GIT_BRANCH
 ARG GITHUB_SHA
@@ -17,7 +17,7 @@ RUN \
     cd app && go build -o /build/sys-agent -ldflags "-X main.revision=${version} -s -w"
 
 
-FROM ghcr.io/umputun/baseimage/app:v1.7.0
+FROM ghcr.io/umputun/baseimage/app:v1.8.0
 COPY --from=build /build/sys-agent /srv/sys-agent
 WORKDIR /srv
 EXPOSE 8080
