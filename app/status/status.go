@@ -2,6 +2,7 @@ package status
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
@@ -12,7 +13,8 @@ import (
 
 // Service provides disk and cpu utilization
 type Service struct {
-	Volumes []Volume
+	Volumes     []Volume
+	ExtServices *ExtServices
 }
 
 // Info contains disk and cpu utilization results
@@ -29,6 +31,7 @@ type Info struct {
 		Five    float64 `json:"five"`
 		Fifteen float64 `json:"fifteen"`
 	} `json:"load_average"`
+	ExtServices map[string]ExtServiceResp `json:"ext_services,omitempty"`
 }
 
 // Volume contains input information for a volume and the result for utilization percentage
@@ -82,5 +85,14 @@ func (s Service) Get() (*Info, error) {
 			UsagePercent: int(usage.UsedPercent),
 		}
 	}
+
+	if s.ExtServices != nil {
+		res.ExtServices = map[string]ExtServiceResp{}
+		for _, v := range s.ExtServices.Status() {
+			res.ExtServices[v.Name] = v
+		}
+	}
+
+	log.Printf("[DEBUG] status: %+v", res)
 	return &res, nil
 }

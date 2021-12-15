@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
-	log "github.com/go-pkgz/lgr"
+	"github.com/go-pkgz/lgr"
 	"github.com/umputun/go-flags"
 
 	"github.com/umputun/sys-agent/app/server"
@@ -19,9 +21,10 @@ import (
 var revision string
 
 var opts struct {
-	Listen  string   `short:"l" long:"listen" env:"LISTEN" default:"localhost:8080" description:"listen on host:port"`
-	Volumes []string `short:"v" long:"volume" env:"VOLUMES" default:"root:/" env-delim:"," description:"volumes to report"`
-	Dbg     bool     `long:"dbg" env:"DEBUG" description:"show debug info"`
+	Listen   string   `short:"l" long:"listen" env:"LISTEN" default:"localhost:8080" description:"listen on host:port"`
+	Volumes  []string `short:"v" long:"volume" env:"VOLUMES" default:"root:/" env-delim:"," description:"volumes to report"`
+	Services []string `short:"s" long:"service" env:"SERVICES"  description:"services to report"`
+	Dbg      bool     `long:"dbg" env:"DEBUG" description:"show debug info"`
 }
 
 func main() {
@@ -61,7 +64,10 @@ func main() {
 	srv := server.Rest{
 		Listen:  opts.Listen,
 		Version: revision,
-		Status:  &status.Service{Volumes: vols},
+		Status: &status.Service{
+			Volumes:     vols,
+			ExtServices: status.NewExtServices(time.Second*5, 4, opts.Services...),
+		},
 	}
 
 	if err := srv.Run(ctx); err != nil && err.Error() != "http: Server closed" {
@@ -84,9 +90,10 @@ func parseVolumes(volumes []string) ([]status.Volume, error) {
 }
 
 func setupLog(dbg bool) {
+	logOpts := []lgr.Option{lgr.Msec, lgr.LevelBraces, lgr.StackTraceOnError}
 	if dbg {
-		log.Setup(log.Debug, log.CallerFile, log.CallerFunc, log.Msec, log.LevelBraces)
-		return
+		logOpts = []lgr.Option{lgr.Debug, lgr.CallerFile, lgr.CallerFunc, lgr.Msec, lgr.LevelBraces, lgr.StackTraceOnError}
 	}
-	log.Setup(log.Msec, log.LevelBraces)
+	lgr.SetupStdLogger(logOpts...)
+	lgr.Setup(logOpts...)
 }

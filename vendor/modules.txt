@@ -27,6 +27,9 @@ github.com/go-pkgz/lgr
 ## explicit; go 1.16
 github.com/go-pkgz/rest
 github.com/go-pkgz/rest/logger
+# github.com/go-pkgz/syncs v1.2.0
+## explicit; go 1.16
+github.com/go-pkgz/syncs
 # github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0
 ## explicit; go 1.16
 github.com/lufia/plan9stats

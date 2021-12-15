@@ -8,6 +8,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-pkgz/lgr v0.10.4
 	github.com/go-pkgz/rest v1.12.0
+	github.com/go-pkgz/syncs v1.2.0
 	github.com/shirou/gopsutil/v3 v3.21.11
 	github.com/stretchr/testify v1.7.0
 	github.com/umputun/go-flags v1.5.1
