@@ -52,12 +52,14 @@ func NewExtServices(httpTimeout time.Duration, concurrency int, ss ...string) *E
 			}
 		}
 	}
+	log.Printf("[INFO] external services checker created for %d services, concurrency:%d, timeout:%v",
+		len(res.svcs), res.concurrency, res.httpTimeout)
 	return res
 }
 
 // Status returns extended service information, request timeout is 5 seconds and runs concurrently
 func (es *ExtServices) Status() []ExtServiceResp {
-	var res []ExtServiceResp
+	res := make([]ExtServiceResp, 0, len(es.svcs))
 	client := http.Client{Timeout: es.httpTimeout}
 	wg := syncs.NewSizedGroup(es.concurrency, syncs.Preemptive)
 	ch := make(chan ExtServiceResp, len(es.svcs))
