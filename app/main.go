@@ -21,10 +21,14 @@ import (
 var revision string
 
 var opts struct {
-	Listen   string   `short:"l" long:"listen" env:"LISTEN" default:"localhost:8080" description:"listen on host:port"`
-	Volumes  []string `short:"v" long:"volume" env:"VOLUMES" default:"root:/" env-delim:"," description:"volumes to report"`
-	Services []string `short:"s" long:"service" env:"SERVICES"  description:"services to report"`
-	Dbg      bool     `long:"dbg" env:"DEBUG" description:"show debug info"`
+	Listen  string   `short:"l" long:"listen" env:"LISTEN" default:"localhost:8080" description:"listen on host:port"`
+	Volumes []string `short:"v" long:"volume" env:"VOLUMES" default:"root:/" env-delim:"," description:"volumes to report"`
+
+	Services    []string      `short:"s" long:"service" env:"SERVICES"  description:"services to report"`
+	Concurrency int           `long:"concurrency" env:"CONCURRENCY" default:"4" description:"number of concurrent requests to services"`
+	TimeOut     time.Duration `long:"timeout" env:"TIMEOUT" default:"5s" description:"timeout for each request to services"`
+
+	Dbg bool `long:"dbg" env:"DEBUG" description:"show debug info"`
 }
 
 func main() {
@@ -66,7 +70,7 @@ func main() {
 		Version: revision,
 		Status: &status.Service{
 			Volumes:     vols,
-			ExtServices: status.NewExtServices(time.Second*5, 4, opts.Services...),
+			ExtServices: status.NewExtServices(opts.TimeOut, opts.Concurrency, opts.Services...),
 		},
 	}
 

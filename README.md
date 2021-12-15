@@ -12,6 +12,8 @@ Application Options:
   -l, --listen= listen on host:port (default: localhost:8080) [$LISTEN]
   -v, --volume= volumes to report (default: root:/) [$VOLUMES]
   -s, --service= services to report [$SERVICES]  
+      --concurrency= number of concurrent requests to services (default: 4) [$CONCURRENCY]
+      --timeout= timeout for each request to services (default: 5s) [$TIMEOUT] 
       --dbg     show debug info [$DEBUG]
 
 Help Options:
@@ -22,6 +24,8 @@ Help Options:
 
 * volumes (`--volume`, can be repeated) is a list of name:path pairs, where name is a name of the volume, and path is a path to the volume.
 * services (`--service`, can be repeated) is a list of name:url pairs, where name is a name of the service, and url is a url to the service. The response for each service will be in `ext_services` field.
+* concurrency (`--concurrency`) is a number of concurrent requests to services.
+* timeout (`--timeout`) is a timeout for each request to services.
 
 ## api
 
