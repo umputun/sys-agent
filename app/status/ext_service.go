@@ -83,15 +83,15 @@ func (es *ExtServices) Status() []ExtServiceResp {
 				return
 			}
 
-			var bodyJson map[string]interface{}
-			if err := json.Unmarshal(bodyStr, &bodyJson); err != nil {
-				bodyJson = map[string]interface{}{"text": string(bodyStr)}
+			var bodyJSON map[string]interface{}
+			if err := json.Unmarshal(bodyStr, &bodyJSON); err != nil {
+				bodyJSON = map[string]interface{}{"text": string(bodyStr)}
 			}
 			resp := ExtServiceResp{
 				Name:         s.Name,
 				StatusCode:   res.StatusCode,
 				ResponseTime: time.Since(st).Milliseconds(),
-				Body:         bodyJson,
+				Body:         bodyJSON,
 			}
 			ch <- resp
 			log.Printf("[DEBUG] ext_service reposne: %s:%s %+v", s.Name, s.URL, resp)
