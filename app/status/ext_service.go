@@ -27,7 +27,7 @@ type ExtServiceResp struct {
 	Name         string                 `json:"name"`
 	StatusCode   int                    `json:"status_code"`
 	ResponseTime int64                  `json:"response_time"` // milliseconds
-	Body         map[string]interface{} `json:"body"`
+	Body         map[string]interface{} `json:"body,omitempty"`
 }
 
 // NewExtServices returns a new instance of ExtServices for a list of name:url pairs
