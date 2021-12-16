@@ -43,8 +43,8 @@ func Test_parseVolumes(t *testing.T) {
 }
 
 func Test_main(t *testing.T) {
-	port := 40000 + int(rand.Int31n(10000))
-	os.Args = []string{"app", "--listen=127.0.0.1:" + strconv.Itoa(port), "-v root:/", "--dbg"}
+	port := 40000 + int(rand.Int31n(1000))
+	os.Args = []string{"app", "--listen=127.0.0.1:" + strconv.Itoa(port), "-v root:/", "-s echo:https://echo.umputun.com", "--dbg"}
 
 	done := make(chan struct{})
 	go func() {
