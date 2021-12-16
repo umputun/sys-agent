@@ -24,7 +24,7 @@ var opts struct {
 	Listen  string   `short:"l" long:"listen" env:"LISTEN" default:"localhost:8080" description:"listen on host:port"`
 	Volumes []string `short:"v" long:"volume" env:"VOLUMES" default:"root:/" env-delim:"," description:"volumes to report"`
 
-	Services    []string      `short:"s" long:"service" env:"SERVICES"  description:"services to report"`
+	Services    []string      `short:"s" long:"service" env:"SERVICES" env-delim:"," description:"services to report"`
 	Concurrency int           `long:"concurrency" env:"CONCURRENCY" default:"4" description:"number of concurrent requests to services"`
 	TimeOut     time.Duration `long:"timeout" env:"TIMEOUT" default:"5s" description:"timeout for each request to services"`
 
