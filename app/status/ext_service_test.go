@@ -83,7 +83,7 @@ func TestExtServices_StatusMongo(t *testing.T) {
 	defer teardown()
 
 	{
-		svc := NewExtServices(time.Second, 4, "m1:mongodb://mongo:27017/test")
+		svc := NewExtServices(time.Second, 4, "m1:mongodb://127.0.0.1:27017/test")
 		res := svc.Status()
 		assert.Equal(t, 1, len(res))
 		assert.Equal(t, "m1", res[0].Name)
@@ -92,7 +92,7 @@ func TestExtServices_StatusMongo(t *testing.T) {
 		assert.Equal(t, map[string]interface{}{"status": "ok"}, res[0].Body)
 	}
 	{
-		svc := NewExtServices(time.Second, 4, "m1:mongodb://mongo:27000/test")
+		svc := NewExtServices(time.Second, 4, "m1:mongodb://127.0.0.1:27000/test")
 		res := svc.Status()
 		assert.Equal(t, 1, len(res))
 		assert.Equal(t, "m1", res[0].Name)
