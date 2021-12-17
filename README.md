@@ -23,7 +23,7 @@ Help Options:
 ### parameters details
 
 * volumes (`--volume`, can be repeated) is a list of name:path pairs, where name is a name of the volume, and path is a path to the volume.
-* services (`--service`, can be repeated) is a list of name:url pairs, where name is a name of the service, and url is a url to the service. The response for each service will be in `ext_services` field.
+* services (`--service`, can be repeated) is a list of name:url pairs, where name is a name of the service, and url is a url to the service. Supports `http`, `https` and `mongodb` schemes. The response for each service will be in `ext_services` field.
 * concurrency (`--concurrency`) is a number of concurrent requests to services.
 * timeout (`--timeout`) is a timeout for each request to services.
 
