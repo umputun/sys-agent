@@ -99,7 +99,7 @@ func (es *ExtServices) Status() []ExtServiceResp {
 
 			resp.ResponseTime = time.Since(st).Milliseconds()
 			ch <- *resp
-			log.Printf("[DEBUG] ext_service reponse: %s:%s %+v", s.Name, s.URL, *resp)
+			log.Printf("[DEBUG] ext_service response: %s:%s %+v", s.Name, s.URL, *resp)
 		})
 	}
 	wg.Wait()
