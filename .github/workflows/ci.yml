@@ -6,11 +6,19 @@ on:
     tags:
   pull_request:
 
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      mongo:
+        image: mongo:5.0
+        ports:
+          - 27017:27017
+
     steps:
+
       - name: set up go 1.17
         uses: actions/setup-go@v2
         with:
@@ -28,6 +36,7 @@ jobs:
         env:
           GOFLAGS: "-mod=vendor"
           TZ: "America/Chicago"
+          MONGO_TEST: mongodb://127.0.0.1:27017
 
       - name: install golangci-lint and goveralls
         run: |
@@ -39,6 +48,7 @@ jobs:
         env:
           GOFLAGS: "-mod=vendor"
           TZ: "America/Chicago"
+          MONGO_TEST: mongodb://127.0.0.1:27017
 
       - name: submit coverage
         run: $(go env GOPATH)/bin/goveralls -service="github" -coverprofile=$GITHUB_WORKSPACE/profile.cov
