@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -85,6 +87,8 @@ func (es *ExtServices) Status() []ExtServiceResp {
 				resp, err = es.httpStatus(s)
 			case strings.HasPrefix(s.URL, "mongodb://"):
 				resp, err = es.mongoStatus(s)
+			case strings.HasPrefix(s.URL, "docker://"):
+				resp, err = es.dockerStatus(s)
 			default:
 				log.Printf("[WARN] unsupported protocol for ext_service, %s %s", s.Name, s.URL)
 				ch <- ExtServiceResp{Name: s.Name, StatusCode: http.StatusInternalServerError, ResponseTime: time.Since(st).Milliseconds()}
@@ -154,6 +158,46 @@ func (es *ExtServices) mongoStatus(req ExtServiceReq) (*ExtServiceResp, error) {
 		Name:       req.Name,
 		StatusCode: 200,
 		Body:       map[string]interface{}{"status": "ok"},
+	}
+	return &result, nil
+}
+
+// the url looks like: docker:///var/run/docker.sock or docker://1.2.3.4:2375
+func (es *ExtServices) dockerStatus(req ExtServiceReq) (*ExtServiceResp, error) {
+	var schemaRegex = regexp.MustCompile("^(?:([a-z0-9]+)://)?(.*)$")
+	parts := schemaRegex.FindStringSubmatch(strings.TrimPrefix(req.URL, "docker://"))
+	proto, addr := parts[1], parts[2]
+	if proto == "" {
+		proto = "unix"
+	}
+	client := http.Client{
+		Transport: &http.Transport{
+			DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
+				return net.Dial(proto, addr)
+			},
+		},
+		Timeout: es.timeout,
+	}
+
+	resp, err := client.Get("http://localhost/v1.22/containers/json")
+	if err != nil {
+		return nil, fmt.Errorf("docker request failed: %s %s: %w", req.Name, req.URL, err)
+	}
+	defer resp.Body.Close()
+
+	bodyStr, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("docker read failed: %s %s: %w", req.Name, req.URL, err)
+	}
+
+	var bodyJSON map[string]interface{}
+	if err := json.Unmarshal(bodyStr, &bodyJSON); err != nil {
+		bodyJSON = map[string]interface{}{"text": string(bodyStr)}
+	}
+	result := ExtServiceResp{
+		Name:       req.Name,
+		StatusCode: resp.StatusCode,
+		Body:       bodyJSON,
 	}
 	return &result, nil
 }

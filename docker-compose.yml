@@ -1,0 +1,17 @@
+services:
+  sys-agent:
+    build: .
+    image: umputun/sys-agent:master
+    container_name: sys-agent
+    hostname: sys-agent
+    ports:
+      - "8080:8080"
+    volumes:
+      - /tmp:/hosthome:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - TZ=America/Chicago
+      - LISTEN=0.0.0.0:8080
+      - DEBUG=true
+      - VOLUMES=home:/hosthome
+      - SERVICES=health:http://172.17.42.1/health,docker:docker:///var/run/docker.sock
