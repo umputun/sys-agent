@@ -192,11 +192,10 @@ func (es *ExtServices) dockerStatus(req ExtServiceReq) (*ExtServiceResp, error) 
 
 	var response []struct {
 		ID      string `json:"Id"`
-		Name    string
 		State   string
 		Status  string
-		Labels  map[string]string
 		Created int64
+		Names   []string
 	}
 
 	if err := json.Unmarshal(bodyStr, &response); err != nil {
