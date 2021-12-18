@@ -17,7 +17,7 @@ RUN \
     cd app && go build -o /build/sys-agent -ldflags "-X main.revision=${version} -s -w"
 
 
-FROM ghcr.io/umputun/baseimage/app:v1.8.0
+FROM umputun/baseimage:scratch-latest
 COPY --from=build /build/sys-agent /srv/sys-agent
 WORKDIR /srv
 EXPOSE 8080
