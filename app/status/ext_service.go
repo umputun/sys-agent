@@ -190,14 +190,22 @@ func (es *ExtServices) dockerStatus(req ExtServiceReq) (*ExtServiceResp, error) 
 		return nil, fmt.Errorf("docker read failed: %s %s: %w", req.Name, req.URL, err)
 	}
 
-	var bodyJSON map[string]interface{}
-	if err := json.Unmarshal(bodyStr, &bodyJSON); err != nil {
-		bodyJSON = map[string]interface{}{"text": string(bodyStr)}
+	var response []struct {
+		ID      string `json:"Id"`
+		Name    string
+		State   string
+		Status  string
+		Labels  map[string]string
+		Created int64
+	}
+
+	if err := json.Unmarshal(bodyStr, &response); err != nil {
+		return nil, fmt.Errorf("docker ummarshal failed: %s %s: %w", req.Name, req.URL, err)
 	}
 	result := ExtServiceResp{
 		Name:       req.Name,
 		StatusCode: resp.StatusCode,
-		Body:       bodyJSON,
+		Body:       map[string]interface{}{"docker": response},
 	}
 	return &result, nil
 }
