@@ -190,7 +190,7 @@ func (es *ExtServices) dockerStatus(req ExtServiceReq) (*ExtServiceResp, error) 
 		return nil, fmt.Errorf("docker read failed: %s %s: %w", req.Name, req.URL, err)
 	}
 
-	var response []struct {
+	var dkResp []struct {
 		ID      string `json:"Id"`
 		State   string
 		Status  string
@@ -198,13 +198,36 @@ func (es *ExtServices) dockerStatus(req ExtServiceReq) (*ExtServiceResp, error) 
 		Names   []string
 	}
 
-	if err := json.Unmarshal(bodyStr, &response); err != nil {
+	containers := map[string]struct {
+		Name   string `json:"name"`
+		State  string `json:"state"`
+		Status string `json:"status"`
+	}{}
+
+	if err := json.Unmarshal(bodyStr, &dkResp); err != nil {
 		return nil, fmt.Errorf("docker ummarshal failed: %s %s: %w", req.Name, req.URL, err)
 	}
+
+	for _, r := range dkResp {
+		if len(r.Names) == 0 || r.Names[0] == "/" {
+			continue
+		}
+		name := strings.TrimPrefix(r.Names[0], "/")
+		containers[name] = struct {
+			Name   string `json:"name"`
+			State  string `json:"state"`
+			Status string `json:"status"`
+		}{
+			Name:   name,
+			State:  r.State,
+			Status: r.Status,
+		}
+	}
+
 	result := ExtServiceResp{
 		Name:       req.Name,
 		StatusCode: resp.StatusCode,
-		Body:       map[string]interface{}{"docker": response},
+		Body:       map[string]interface{}{"containers": containers},
 	}
 	return &result, nil
 }
