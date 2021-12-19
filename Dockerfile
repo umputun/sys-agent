@@ -21,6 +21,5 @@ FROM umputun/baseimage:scratch-latest
 COPY --from=build /build/sys-agent /srv/sys-agent
 WORKDIR /srv
 EXPOSE 8080
-HEALTHCHECK --interval=30s --timeout=3s CMD curl --fail http://localhost:8080/ping || exit 1
 
 CMD ["/srv/sys-agent"]
