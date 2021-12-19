@@ -238,5 +238,12 @@ func (es *ExtServices) parseDockerResponse(r io.Reader) (map[string]interface{},
 		}
 	}
 
-	return map[string]interface{}{"containers": containers, "total": len(containers), "healthy": healthy, "running": running}, nil
+	res := map[string]interface{}{
+		"containers": containers,
+		"total":      len(containers),
+		"healthy":    healthy,
+		"running":    running,
+		"failed":     len(containers) - running,
+	}
+	return res, nil
 }

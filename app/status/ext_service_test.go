@@ -112,9 +112,10 @@ func TestExtServices_parseDockerResponse(t *testing.T) {
 	res, err := svc.parseDockerResponse(fh)
 	require.NoError(t, err)
 	t.Logf("%+v", res)
-	assert.Equal(t, 4, len(res))
+	assert.Equal(t, 5, len(res))
 	assert.Equal(t, "map[nginx:{nginx running Up 2 seconds} weather:{weather running Up 2 hours (healthy)}]", fmt.Sprintf("%v", res["containers"]))
 	assert.Equal(t, 2, res["total"])
 	assert.Equal(t, 2, res["running"])
 	assert.Equal(t, 1, res["healthy"])
+	assert.Equal(t, 0, res["failed"])
 }
