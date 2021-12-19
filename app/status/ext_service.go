@@ -185,11 +185,20 @@ func (es *ExtServices) dockerStatus(req ExtServiceReq) (*ExtServiceResp, error) 
 	}
 	defer resp.Body.Close()
 
-	bodyStr, err := io.ReadAll(resp.Body)
+	dkinfo, err := es.parseDockerResponse(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("docker read failed: %s %s: %w", req.Name, req.URL, err)
+		return nil, fmt.Errorf("docker parsing failed: %s %s: %w", req.Name, req.URL, err)
 	}
 
+	result := ExtServiceResp{
+		Name:       req.Name,
+		StatusCode: resp.StatusCode,
+		Body:       dkinfo,
+	}
+	return &result, nil
+}
+
+func (es *ExtServices) parseDockerResponse(r io.Reader) (map[string]interface{}, error) {
 	var dkResp []struct {
 		ID      string `json:"Id"`
 		State   string
@@ -198,43 +207,36 @@ func (es *ExtServices) dockerStatus(req ExtServiceReq) (*ExtServiceResp, error) 
 		Names   []string
 	}
 
-	containers := map[string]struct {
+	if err := json.NewDecoder(r).Decode(&dkResp); err != nil {
+		return nil, fmt.Errorf("docker ummarshal failed: %w", err)
+	}
+
+	type container struct {
 		Name   string `json:"name"`
 		State  string `json:"state"`
 		Status string `json:"status"`
-	}{}
-
-	if err := json.Unmarshal(bodyStr, &dkResp); err != nil {
-		return nil, fmt.Errorf("docker ummarshal failed: %s %s: %w", req.Name, req.URL, err)
 	}
 
+	containers := map[string]container{}
 	running, healthy := 0, 0
 	for _, r := range dkResp {
 		if len(r.Names) == 0 || r.Names[0] == "/" {
 			continue
 		}
 		name := strings.TrimPrefix(r.Names[0], "/")
-		containers[name] = struct {
-			Name   string `json:"name"`
-			State  string `json:"state"`
-			Status string `json:"status"`
-		}{
+		containers[name] = container{
 			Name:   name,
 			State:  r.State,
 			Status: r.Status,
 		}
+
 		if r.State == "running" {
 			running++
 		}
-		if strings.Contains(r.Status, "(healthy)") && strings.Contains(r.Status, "Up)") {
+		if strings.HasSuffix(r.Status, "(healthy)") {
 			healthy++
 		}
 	}
 
-	result := ExtServiceResp{
-		Name:       req.Name,
-		StatusCode: resp.StatusCode,
-		Body:       map[string]interface{}{"containers": containers, "total": len(containers), "healthy": healthy, "running": running},
-	}
-	return &result, nil
+	return map[string]interface{}{"containers": containers, "total": len(containers), "healthy": healthy, "running": running}, nil
 }

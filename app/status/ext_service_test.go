@@ -1,8 +1,10 @@
 package status
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strconv"
 	"testing"
 	"time"
@@ -100,4 +102,19 @@ func TestExtServices_StatusMongo(t *testing.T) {
 		assert.True(t, res[0].ResponseTime >= 1000)
 		t.Logf("%+v", res[0])
 	}
+}
+
+func TestExtServices_parseDockerResponse(t *testing.T) {
+	fh, err := os.Open("testdata/containers.json")
+	require.NoError(t, err)
+
+	svc := NewExtServices(time.Second, 4)
+	res, err := svc.parseDockerResponse(fh)
+	require.NoError(t, err)
+	t.Logf("%+v", res)
+	assert.Equal(t, 4, len(res))
+	assert.Equal(t, "map[nginx:{nginx running Up 2 seconds} weather:{weather running Up 2 hours (healthy)}]", fmt.Sprintf("%v", res["containers"]))
+	assert.Equal(t, 2, res["total"])
+	assert.Equal(t, 2, res["running"])
+	assert.Equal(t, 1, res["healthy"])
 }
