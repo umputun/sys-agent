@@ -208,6 +208,7 @@ func (es *ExtServices) dockerStatus(req ExtServiceReq) (*ExtServiceResp, error) 
 		return nil, fmt.Errorf("docker ummarshal failed: %s %s: %w", req.Name, req.URL, err)
 	}
 
+	running, healthy := 0, 0
 	for _, r := range dkResp {
 		if len(r.Names) == 0 || r.Names[0] == "/" {
 			continue
@@ -222,12 +223,18 @@ func (es *ExtServices) dockerStatus(req ExtServiceReq) (*ExtServiceResp, error) 
 			State:  r.State,
 			Status: r.Status,
 		}
+		if r.State == "running" {
+			running++
+		}
+		if strings.Contains(r.Status, "(healthy)") && strings.Contains(r.Status, "Up)") {
+			healthy++
+		}
 	}
 
 	result := ExtServiceResp{
 		Name:       req.Name,
 		StatusCode: resp.StatusCode,
-		Body:       map[string]interface{}{"containers": containers},
+		Body:       map[string]interface{}{"containers": containers, "total": len(containers), "healthy": healthy, "running": running},
 	}
 	return &result, nil
 }
