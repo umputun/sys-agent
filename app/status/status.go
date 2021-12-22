@@ -40,7 +40,7 @@ type Info struct {
 		Five    float64 `json:"five"`
 		Fifteen float64 `json:"fifteen"`
 	} `json:"load_average"`
-	ExtServices map[string]external.Response `json:"ext_services,omitempty"`
+	ExtServices map[string]external.Response `json:"services,omitempty"`
 }
 
 // Volume contains input information for a volume and the result for utilization percentage

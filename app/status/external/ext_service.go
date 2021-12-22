@@ -63,7 +63,7 @@ func NewService(providers Providers, concurrency int, reqs ...string) *Service {
 			if len(req.Name) > 0 && len(req.URL) > 0 {
 				result.requests = append(result.requests, req)
 			}
-			log.Printf("[DEBUG] ext_service: name:%s, url:%s", req.Name, req.URL)
+			log.Printf("[DEBUG] service: name:%s, url:%s", req.Name, req.URL)
 		}
 	}
 	return result
@@ -96,20 +96,20 @@ func (s *Service) Status() []Response {
 			case strings.HasPrefix(r.URL, "docker://"):
 				resp, err = s.providers.Docker.Status(r)
 			default:
-				log.Printf("[WARN] unsupported protocol for ext_service, %s %s", r.Name, r.URL)
+				log.Printf("[WARN] unsupported protocol for service, %s %s", r.Name, r.URL)
 				ch <- Response{Name: r.Name, StatusCode: http.StatusInternalServerError, ResponseTime: time.Since(st).Milliseconds()}
 				return
 			}
 
 			if err != nil {
-				log.Printf("[WARN] ext_service request failed: %s %s: %v", r.Name, r.URL, err)
+				log.Printf("[WARN] service request failed: %s %s: %v", r.Name, r.URL, err)
 				ch <- Response{Name: r.Name, StatusCode: http.StatusInternalServerError, ResponseTime: time.Since(st).Milliseconds()}
 				return
 			}
 
 			resp.ResponseTime = time.Since(st).Milliseconds()
 			ch <- *resp
-			log.Printf("[DEBUG] ext_service response: %s:%s %+v", r.Name, r.URL, *resp)
+			log.Printf("[DEBUG] service response: %s:%s %+v", r.Name, r.URL, *resp)
 		})
 	}
 	wg.Wait()
