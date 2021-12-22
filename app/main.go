@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/umputun/sys-agent/app/server"
 	"github.com/umputun/sys-agent/app/status"
+	"github.com/umputun/sys-agent/app/status/external"
 )
 
 var revision string
@@ -65,12 +67,18 @@ func main() {
 		log.Fatalf("[ERROR] %s", err)
 	}
 
+	providers := external.Providers{
+		HTTP:   &external.HttpProvider{Client: http.Client{Timeout: opts.TimeOut}},
+		Mongo:  &external.MongoProvider{TimeOut: opts.TimeOut},
+		Docker: &external.DockerProvider{TimeOut: opts.TimeOut},
+	}
+
 	srv := server.Rest{
 		Listen:  opts.Listen,
 		Version: revision,
 		Status: &status.Service{
 			Volumes:     vols,
-			ExtServices: status.NewExtServices(opts.TimeOut, opts.Concurrency, opts.Services...),
+			ExtServices: external.NewService(providers, opts.Concurrency, opts.Services...),
 		},
 	}
 

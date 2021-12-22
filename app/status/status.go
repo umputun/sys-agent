@@ -9,12 +9,20 @@ import (
 	"github.com/shirou/gopsutil/v3/host"
 	"github.com/shirou/gopsutil/v3/load"
 	"github.com/shirou/gopsutil/v3/mem"
+
+	"github.com/umputun/sys-agent/app/status/external"
 )
+
+//go:generate moq -out ext_mock.go -skip-ensure -fmt goimports . ExtServices
 
 // Service provides disk and cpu utilization
 type Service struct {
 	Volumes     []Volume
-	ExtServices *ExtServices
+	ExtServices ExtServices
+}
+
+type ExtServices interface {
+	Status() []external.Response
 }
 
 // Info contains disk and cpu utilization results
@@ -31,7 +39,7 @@ type Info struct {
 		Five    float64 `json:"five"`
 		Fifteen float64 `json:"fifteen"`
 	} `json:"load_average"`
-	ExtServices map[string]ExtServiceResp `json:"ext_services,omitempty"`
+	ExtServices map[string]external.Response `json:"ext_services,omitempty"`
 }
 
 // Volume contains input information for a volume and the result for utilization percentage
@@ -87,7 +95,7 @@ func (s Service) Get() (*Info, error) {
 	}
 
 	if s.ExtServices != nil {
-		res.ExtServices = map[string]ExtServiceResp{}
+		res.ExtServices = map[string]external.Response{}
 		for _, v := range s.ExtServices.Status() {
 			res.ExtServices[v.Name] = v
 		}
