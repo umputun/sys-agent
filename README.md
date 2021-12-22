@@ -43,7 +43,7 @@ Help Options:
     }
     ```
 * `mongodb` - checks if mongo available, i.e. `foo:mongodb://example.com:27017/`
-* `docker` - checks if docker service is available, i.e. `bar:docker:///var/run/docker.sock?containers=nginx,redis`. The `containers` parameter is a list of required container names, optional.
+* `docker` - checks if docker service is available, i.e. `bar:docker:///var/run/docker.sock?containers=nginx:redis`. The `containers` parameter is a list of required container names, optional.
 
 ## api
 

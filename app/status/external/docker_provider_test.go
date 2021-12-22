@@ -46,14 +46,14 @@ func TestDockerProvider_StatusWithRequired(t *testing.T) {
 	p := DockerProvider{TimeOut: time.Second}
 
 	{
-		resp, err := p.Status(Request{Name: "d1", URL: strings.Replace(ts.URL, "http://", "tcp://", 1) + "?containers=c1,c2"})
+		resp, err := p.Status(Request{Name: "d1", URL: strings.Replace(ts.URL, "http://", "tcp://", 1) + "?containers=c1:c2"})
 		require.NoError(t, err)
 		assert.Equal(t, 200, resp.StatusCode)
 		assert.Equal(t, "failed: c1,c2", resp.Body["required"])
 	}
 
 	{
-		resp, err := p.Status(Request{Name: "d1", URL: strings.Replace(ts.URL, "http://", "tcp://", 1) + "?containers=nginx,weather"})
+		resp, err := p.Status(Request{Name: "d1", URL: strings.Replace(ts.URL, "http://", "tcp://", 1) + "?containers=nginx:weather"})
 		require.NoError(t, err)
 		assert.Equal(t, 200, resp.StatusCode)
 		assert.Equal(t, "ok", resp.Body["required"])
