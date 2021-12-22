@@ -68,7 +68,7 @@ func main() {
 	}
 
 	providers := external.Providers{
-		HTTP:   &external.HttpProvider{Client: http.Client{Timeout: opts.TimeOut}},
+		HTTP:   &external.HTTPProvider{Client: http.Client{Timeout: opts.TimeOut}},
 		Mongo:  &external.MongoProvider{TimeOut: opts.TimeOut},
 		Docker: &external.DockerProvider{TimeOut: opts.TimeOut},
 	}

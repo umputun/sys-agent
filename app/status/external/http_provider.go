@@ -8,13 +8,13 @@ import (
 	"time"
 )
 
-// HttpProvider is an external service that checks the status of a HTTP endpoint
-type HttpProvider struct {
+// HTTPProvider is an external service that checks the status of a HTTP endpoint
+type HTTPProvider struct {
 	http.Client
 }
 
 // Status returns the status of the external service via HTTP GET
-func (h *HttpProvider) Status(req Request) (*Response, error) {
+func (h *HTTPProvider) Status(req Request) (*Response, error) {
 	st := time.Now()
 	resp, err := h.Get(req.URL)
 	if err != nil {

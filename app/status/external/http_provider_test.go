@@ -19,7 +19,7 @@ func TestHttpProvider_Status(t *testing.T) {
 
 	}))
 
-	p := HttpProvider{Client: http.Client{Timeout: time.Second}}
+	p := HTTPProvider{Client: http.Client{Timeout: time.Second}}
 	resp, err := p.Status(Request{Name: "r1", URL: ts.URL})
 	require.NoError(t, err)
 
@@ -38,7 +38,7 @@ func TestHttpProvider_StatusHttpNoJson(t *testing.T) {
 
 	}))
 
-	p := HttpProvider{Client: http.Client{Timeout: time.Second}}
+	p := HTTPProvider{Client: http.Client{Timeout: time.Second}}
 	resp, err := p.Status(Request{Name: "r1", URL: ts.URL})
 	require.NoError(t, err)
 

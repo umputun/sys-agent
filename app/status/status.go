@@ -21,6 +21,7 @@ type Service struct {
 	ExtServices ExtServices
 }
 
+// ExtServices declares interface to get status of all external services
 type ExtServices interface {
 	Status() []external.Response
 }
