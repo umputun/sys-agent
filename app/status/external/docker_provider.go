@@ -8,7 +8,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -19,24 +18,23 @@ type DockerProvider struct {
 }
 
 // Status the url looks like: docker:///var/run/docker.sock or docker://1.2.3.4:2375
-// optionally the url can contain a query param "containers" with a comma separated list of container names to be presented
+// optionally the url can contain a query param "required" with a comma separated list of required container names
+// i.e. docker:///var/run/docker.sock?containers=foo,bar
 func (d *DockerProvider) Status(req Request) (*Response, error) {
 
-	uu, err := url.Parse(req.URL)
+	u := strings.Replace(req.URL, "docker://", "tcp://", 1)
+	if strings.HasPrefix(req.URL, " docker:///") {
+		u = strings.Replace(req.URL, "unix://", "", 1)
+	}
+	uu, err := url.Parse(u)
 	if err != nil {
 		return nil, fmt.Errorf("docker url parse failed: %s %s: %w", req.Name, req.URL, err)
 	}
 
-	var schemaRegex = regexp.MustCompile("^(?:([a-z0-9]+)://)?(.*)$")
-	parts := schemaRegex.FindStringSubmatch(uu.Path)
-	proto, addr := parts[1], parts[2]
-	if proto == "" {
-		proto = "unix"
-	}
 	client := http.Client{
 		Transport: &http.Transport{
 			DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
-				return net.Dial(proto, addr)
+				return net.Dial(uu.Scheme, uu.Host)
 			},
 		},
 		Timeout: d.TimeOut,
@@ -48,7 +46,11 @@ func (d *DockerProvider) Status(req Request) (*Response, error) {
 	}
 	defer resp.Body.Close()
 
-	dkinfo, err := d.parseDockerResponse(resp.Body)
+	var required []string
+	if uu.Query().Get("containers") != "" {
+		required = strings.Split(uu.Query().Get("containers"), ",")
+	}
+	dkinfo, err := d.parseDockerResponse(resp.Body, required)
 	if err != nil {
 		return nil, fmt.Errorf("docker parsing failed: %s %s: %w", req.Name, req.URL, err)
 	}
@@ -61,7 +63,7 @@ func (d *DockerProvider) Status(req Request) (*Response, error) {
 	return &result, nil
 }
 
-func (d *DockerProvider) parseDockerResponse(r io.Reader) (map[string]interface{}, error) {
+func (d *DockerProvider) parseDockerResponse(r io.Reader, required []string) (map[string]interface{}, error) {
 	var dkResp []struct {
 		ID      string `json:"Id"`
 		State   string
@@ -101,12 +103,29 @@ func (d *DockerProvider) parseDockerResponse(r io.Reader) (map[string]interface{
 		}
 	}
 
+	var requiredNotFound []string
+	for _, rq := range required {
+		if _, ok := containers[rq]; !ok {
+			requiredNotFound = append(requiredNotFound, rq)
+			continue
+		}
+		if containers[rq].State != "running" {
+			requiredNotFound = append(requiredNotFound, rq)
+		}
+	}
+
 	res := map[string]interface{}{
 		"containers": containers,
 		"total":      len(containers),
 		"healthy":    healthy,
 		"running":    running,
 		"failed":     len(containers) - running,
+		"required":   "ok",
 	}
+
+	if len(requiredNotFound) > 0 {
+		res["required"] = "failed: " + strings.Join(requiredNotFound, ",")
+	}
+
 	return res, nil
 }
