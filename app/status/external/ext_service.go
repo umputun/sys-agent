@@ -63,7 +63,7 @@ func NewService(providers Providers, concurrency int, reqs ...string) *Service {
 			if len(req.Name) > 0 && len(req.URL) > 0 {
 				result.requests = append(result.requests, req)
 			}
-			log.Printf("[DEBUG] ext_service: %s:%s", req.Name, req.URL)
+			log.Printf("[DEBUG] ext_service: name:%s, url:%s", req.Name, req.URL)
 		}
 	}
 	return result

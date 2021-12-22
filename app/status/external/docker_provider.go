@@ -23,8 +23,8 @@ type DockerProvider struct {
 func (d *DockerProvider) Status(req Request) (*Response, error) {
 
 	u := strings.Replace(req.URL, "docker://", "tcp://", 1)
-	if strings.HasPrefix(req.URL, " docker:///") {
-		u = strings.Replace(req.URL, "unix://", "", 1)
+	if strings.HasPrefix(req.URL, " docker:///") { // i.e. docker:///var/run/docker.sock
+		u = strings.Replace(req.URL, "docker://", "unix://", 1)
 	}
 	uu, err := url.Parse(u)
 	if err != nil {
