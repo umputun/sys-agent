@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -130,6 +131,6 @@ func (d *DockerProvider) parseDockerResponse(r io.Reader, required []string) (ma
 	if len(requiredNotFound) > 0 {
 		res["required"] = "failed: " + strings.Join(requiredNotFound, ",")
 	}
-
+	log.Printf("[DEBUG] required containers %+v, failed: %+v", required, requiredNotFound)
 	return res, nil
 }
