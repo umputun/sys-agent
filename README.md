@@ -27,6 +27,24 @@ Help Options:
 * concurrency (`--concurrency`) is a number of concurrent requests to services.
 * timeout (`--timeout`) is a timeout for each request to services.
 
+## external services
+
+* `http` and `https` - checks if service is available by GET request, i.e. `health:http://example.com/ping`. Response example:
+    ```json
+    {
+      "web": {
+        "body": {
+          "text": "pong"
+        },
+        "name": "web",
+        "response_time": 109,
+        "status_code": 200
+      }
+    }
+    ```
+* `mongodb` - checks if mongo available, i.e. `foo:mongodb://example.com:27017/`
+* `docker` - checks if docker service is available, i.e. `bar:docker:///var/run/docker.sock?containers=nginx,redis`. The `containers` parameter is a list of required container names, optional.
+
 ## api
 
  - `GET /status` - returns server status in JSON format
@@ -34,7 +52,10 @@ Help Options:
 
 ### example
 
-`$ sys-age -v root:/ -s "s1:https://echo.umputun.com/s1" -s "s2:https://echo.umputun.com/s2" --dbg`
+```
+$ sys-age -v root:/ -s "s1:https://echo.umputun.com/s1" -s "s2:https://echo.umputun.com/s2" \
+ -s mongo://mongodb://1.2.3.4:27017/ -s docker:///var/run/docker.sock --dbg`
+```
 
 request: `curl -s http://localhost:8080/status`
 
@@ -96,6 +117,46 @@ response:
         "remote_addr": "172.28.0.7:49692",
         "request": "GET /s2"
       }
+    },
+    "docker": {
+      "body": {
+        "containers": {
+          "consul": {
+            "name": "consul",
+            "state": "running",
+            "status": "Up 7 weeks (healthy)"
+          },
+          "logger": {
+            "name": "logger",
+            "state": "running",
+            "status": "Up 7 weeks"
+          },
+          "nginx": {
+            "name": "nginx",
+            "state": "running",
+            "status": "Up 13 days"
+          },
+          "sys-agent": {
+            "name": "sys-agent",
+            "state": "running",
+            "status": "Up 7 hours"
+          }
+        },
+        "failed": 0,
+        "healthy": 1,
+        "running": 4,
+        "total": 4
+      },
+      "name": "docker",
+      "response_time": 5,
+      "status_code": 200,
+      "required": "ok"
+    },
+    "mongo": {
+      "name": "mongo",
+      "status_code": 200,
+      "response_time": 4,
+      "body": {"status":"ok"}
     }
   }
 }
