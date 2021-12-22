@@ -49,7 +49,50 @@ Help Options:
     }
     ```
 * `mongodb` - checks if mongo available, i.e. `foo:mongodb://example.com:27017/`
-* `docker` - checks if docker service is available, i.e. `bar:docker:///var/run/docker.sock?containers=nginx:redis`. The `containers` parameter is a list of required container names, optional.
+* `docker` - checks if docker service is available, i.e. `bar:docker:///var/run/docker.sock?containers=nginx:redis`. The `containers` parameter is a list of required container names separated by `:`, optional. Response example:
+  ```json
+    {
+    "docker": {
+      "body": {
+        "containers": {
+          "consul": {
+            "name": "consul",
+            "state": "running",
+            "status": "Up 3 months (healthy)"
+          },
+          "logger": {
+            "name": "logger",
+            "state": "running",
+            "status": "Up 3 months"
+          },
+          "nginx": {
+            "name": "nginx",
+            "state": "running",
+            "status": "Up 3 months"
+          },
+          "registry-v2": {
+            "name": "registry-v2",
+            "state": "running",
+            "status": "Up 3 months"
+          }
+        },
+        "failed": 0,
+        "healthy": 1,
+        "required": "ok",
+        "running": 4,
+        "total": 4,
+        "unhealthy": 0
+      },
+      "name": "docker",
+      "response_time": 2,
+      "status_code": 200
+    }
+  }
+  ```
+  - failed - number of failed or non-running containers
+  - healthy - number of healthy containers, only for those with health check
+  - unhealthy - number of unhealthy containers, only for those with health check
+  - required - ok if all required containers are running, otherwise failed with a list of failed containers
 
 ## api
 
