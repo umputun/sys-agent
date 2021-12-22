@@ -88,7 +88,7 @@ func (d *DockerProvider) parseDockerResponse(r io.Reader, required []string) (ma
 	}
 
 	containers := map[string]container{}
-	running, healthy := 0, 0
+	running, healthy, unhealthy := 0, 0, 0
 	for _, r := range dkResp {
 		if len(r.Names) == 0 || r.Names[0] == "/" {
 			continue
@@ -105,6 +105,9 @@ func (d *DockerProvider) parseDockerResponse(r io.Reader, required []string) (ma
 		}
 		if strings.HasSuffix(r.Status, "(healthy)") {
 			healthy++
+		}
+		if strings.HasSuffix(r.Status, "(unhealthy)") {
+			unhealthy++
 		}
 	}
 
@@ -123,6 +126,7 @@ func (d *DockerProvider) parseDockerResponse(r io.Reader, required []string) (ma
 		"containers": containers,
 		"total":      len(containers),
 		"healthy":    healthy,
+		"unhealthy":  unhealthy,
 		"running":    running,
 		"failed":     len(containers) - running,
 		"required":   "ok",
