@@ -31,6 +31,10 @@ func (d *DockerProvider) Status(req Request) (*Response, error) {
 		return nil, fmt.Errorf("docker url parse failed: %s %s: %w", req.Name, req.URL, err)
 	}
 
+	if uu.Scheme == "unix" { // for unix socket use path as host
+		uu.Host = uu.Path
+	}
+
 	client := http.Client{
 		Transport: &http.Transport{
 			DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
