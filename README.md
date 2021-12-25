@@ -261,3 +261,8 @@ this is a gatus configuration example:
 ```
 sys-agent -l :4041 -v root:/ -v data:/data -s docker:docker:///var/run/docker.sock -s web:https://echo.umputun.com/foo/bar
 ```
+
+## credits
+
+- `sys-agent` is using a very nice and functional [github.com/shirou/gopsutil/v3](https://github.com/shirou/gopsutil) (psutil for golang) package to collect cpu, memory and volume statuses.
+- http api served with indispensable [chi](https://github.com/go-chi/chi) web router.
