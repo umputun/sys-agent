@@ -1,6 +1,6 @@
 # sys-agent [![build](https://github.com/umputun/sys-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/umputun/sys-agent/actions/workflows/ci.yml) [![Coverage Status](https://coveralls.io/repos/github/umputun/sys-agent/badge.svg?branch=master)](https://coveralls.io/github/umputun/sys-agent?branch=master)
 
-System agent is a simple service reporting server status via HTTP GET request. It is useful for monitoring and debugging purposes, but usually as a part of some other monitoring system collecting data and serving it. One of such systems is [gatus,](https://github.com/TwiN/gatus) and it works fine with sys-agent.
+System agent is a simple service reporting server status via HTTP GET request. It is useful for monitoring and debugging purposes, but usually used as a part of some other monitoring system collecting data and serving it. One of such systems is [gatus](https://github.com/TwiN/gatus), and it works fine with `sys-agent`.
 
 `sys-agent` can run directly on a server (systemd service provided) or as a docker container (mutli-arch container provided).
 
@@ -232,4 +232,32 @@ services:
       - VOLUMES=home:/hosthome,root:/hostroot
       - SERVICES=health:http://172.17.42.1/health,docker:docker:///var/run/docker.sock
 
+```
+
+## example of using `sys-agent` with [gatus](https://github.com/TwiN/gatus)
+
+this is a gatus configuration example:
+
+```yml
+  - name: web-site
+    group: things
+    url: "http://10.0.0.244:4041/status"
+    interval: 1m
+    conditions:
+      - "[STATUS] == 200"
+      - "[BODY].volumes.root.usage_percent < 95"
+      - "[BODY].volumes.data.usage_percent < 95"
+      - "[BODY].services.docker.body.failed == 0"
+      - "[BODY].services.docker.body.running > 3"
+      - "[BODY].services.docker.body.required  == ok"
+      - "[BODY].services.web.status_code == 200"
+      - "[BODY].services.web.response_time < 100"
+    alerts:
+      - type: slack
+  ```
+
+`sys-agent` command line used for this example: 
+
+```
+sys-agent -l :4041 -v root:/ -v data:/data -s docker:docker:///var/run/docker.sock -s web:https://echo.umputun.com/foo/bar
 ```
