@@ -210,3 +210,26 @@ response:
   }
 }
 ```
+
+## running sys-agent in docker
+
+`sys-agent` is capable of running directly on a box as well as from docker container. For the direct run both binary archives and install packages are available. For docker run you need to map volumes, and it is recommended to mount them in `ro` mode. Example of a docker compose file:
+
+```
+services:
+  sys-agent:
+    image: umputun/sys-agent:latest
+    container_name: sys-agent
+    hostname: sys-agent
+    ports:
+      - "8080:8080"
+    volumes:
+      - /home:/hosthome:ro
+      - /:/hostroot:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - LISTEN=0.0.0.0:8080
+      - VOLUMES=home:/hosthome,root:/hostroot
+      - SERVICES=health:http://172.17.42.1/health,docker:docker:///var/run/docker.sock
+
+```
