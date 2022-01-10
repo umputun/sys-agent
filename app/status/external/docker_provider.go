@@ -53,7 +53,14 @@ func (d *DockerProvider) Status(req Request) (*Response, error) {
 
 	var required []string
 	if uu.Query().Get("containers") != "" {
-		required = strings.Split(uu.Query().Get("containers"), ":")
+		requiredDirty := strings.Split(uu.Query().Get("containers"), ":")
+		for _, r := range requiredDirty {
+			r = strings.TrimSpace(r)
+			if r == "" {
+				continue
+			}
+			required = append(required, r)
+		}
 	}
 	dkinfo, err := d.parseDockerResponse(resp.Body, required)
 	if err != nil {
