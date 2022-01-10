@@ -26,7 +26,8 @@ func Test_parseVolumes(t *testing.T) {
 		err  error
 	}{
 		{[]string{"data volume:/data"}, []status.Volume{{Name: "data volume", Path: "/data"}}, nil},
-		{[]string{"data volume:/data", "blah:/"}, []status.Volume{{Name: "data volume", Path: "/data"}, {Name: "blah", Path: "/"}}, nil},
+		{[]string{"data volume:/data", "blah:/"},
+			[]status.Volume{{Name: "data volume", Path: "/data"}, {Name: "blah", Path: "/"}}, nil},
 		{[]string{"/data"}, []status.Volume{}, errors.New("invalid volume format, should be <name>:<path>")},
 	}
 
