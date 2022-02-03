@@ -1,3 +1,4 @@
+//go:build openbsd
 // +build openbsd
 
 package process
@@ -80,7 +81,6 @@ func (p *Process) ExeWithContext(ctx context.Context) (string, error) {
 func (p *Process) CmdlineSliceWithContext(ctx context.Context) ([]string, error) {
 	mib := []int32{CTLKern, KernProcArgs, p.Pid, KernProcArgv}
 	buf, _, err := common.CallSyscall(mib)
-
 	if err != nil {
 		return nil, err
 	}
@@ -140,10 +140,6 @@ func (p *Process) CmdlineWithContext(ctx context.Context) (string, error) {
 
 func (p *Process) createTimeWithContext(ctx context.Context) (int64, error) {
 	return 0, common.ErrNotImplementedError
-}
-
-func (p *Process) ParentWithContext(ctx context.Context) (*Process, error) {
-	return nil, common.ErrNotImplementedError
 }
 
 func (p *Process) StatusWithContext(ctx context.Context) ([]string, error) {
@@ -318,7 +314,6 @@ func ProcessesWithContext(ctx context.Context) ([]*Process, error) {
 	results := []*Process{}
 
 	buf, length, err := callKernProcSyscall(KernProcAll, 0)
-
 	if err != nil {
 		return results, err
 	}

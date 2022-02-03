@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-pkgz/expirable-cache"
+	cache "github.com/go-pkgz/expirable-cache"
 	"golang.org/x/time/rate"
 )
 
@@ -21,7 +21,8 @@ func New(generalExpirableOptions *ExpirableOptions) *Limiter {
 		SetIPLookups([]string{"RemoteAddr", "X-Forwarded-For", "X-Real-IP"}).
 		SetForwardedForIndexFromBehind(0).
 		SetHeaders(make(map[string][]string)).
-		SetContextValues(make(map[string][]string))
+		SetContextValues(make(map[string][]string)).
+		SetIgnoreURL(false)
 
 	if generalExpirableOptions != nil {
 		lmt.generalExpirableOptions = generalExpirableOptions
@@ -61,6 +62,9 @@ type Limiter struct {
 	// A function to call when a request is rejected.
 	onLimitReached func(w http.ResponseWriter, r *http.Request)
 
+	// An option to write back what you want upon reaching a limit.
+	overrideDefaultResponseWriter bool
+
 	// List of places to look up IP address.
 	// Default is "RemoteAddr", "X-Forwarded-For", "X-Real-IP".
 	// You can rearrange the order as you like.
@@ -87,6 +91,9 @@ type Limiter struct {
 
 	// Map of limiters with TTL
 	tokenBuckets cache.Cache
+
+	// Ignore URL on the rate limiter keys
+	ignoreURL bool
 
 	tokenBucketExpirationTTL  time.Duration
 	basicAuthExpirationTTL    time.Duration
@@ -261,6 +268,20 @@ func (l *Limiter) ExecOnLimitReached(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// SetOverrideDefaultResponseWriter is a thread-safe way of setting the response writer override variable.
+func (l *Limiter) SetOverrideDefaultResponseWriter(override bool) {
+	l.Lock()
+	l.overrideDefaultResponseWriter = override
+	l.Unlock()
+}
+
+// GetOverrideDefaultResponseWriter is a thread-safe way of getting the response writer override variable.
+func (l *Limiter) GetOverrideDefaultResponseWriter() bool {
+	l.RLock()
+	defer l.RUnlock()
+	return l.overrideDefaultResponseWriter
+}
+
 // SetIPLookups is thread-safe way of setting list of places to look up IP address.
 func (l *Limiter) SetIPLookups(ipLookups []string) *Limiter {
 	l.Lock()
@@ -275,6 +296,22 @@ func (l *Limiter) GetIPLookups() []string {
 	l.RLock()
 	defer l.RUnlock()
 	return l.ipLookups
+}
+
+// SetIgnoreURL is thread-safe way of setting whenever ignore the URL on rate limit keys
+func (l *Limiter) SetIgnoreURL(enabled bool) *Limiter {
+	l.Lock()
+	l.ignoreURL = enabled
+	l.Unlock()
+
+	return l
+}
+
+// GetIgnoreURL returns whether the URL is ignored in the rate limit key set
+func (l *Limiter) GetIgnoreURL() bool {
+	l.RLock()
+	defer l.RUnlock()
+	return l.ignoreURL
 }
 
 // SetForwardedForIndexFromBehind is thread-safe way of setting which X-Forwarded-For index to choose.
