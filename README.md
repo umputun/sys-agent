@@ -33,66 +33,157 @@ Help Options:
 * concurrency (`--concurrency`) is a number of concurrent requests to services.
 * timeout (`--timeout`) is a timeout for each request to services.
 
+## basic checks
+
+`sys-agent` always reports  internal metrics for cpu, memory, volumes and load averages.
+
+```json
+{
+  "hostname": "BigMac.localdomain",
+  "procs": 723,
+  "host_id": "cd9973a05-85e7-5bca0-b393-5285825e3556",
+  "cpu_percent": 7,
+  "mem_percent": 49,
+  "uptime": 99780,
+  "volumes": {
+    "root": {
+      "name": "root",
+      "path": "/",
+      "usage_percent": 78
+    }
+  },
+  "load_average": {
+    "one": 3.52978515625,
+    "five": 3.43359375,
+    "fifteen": 3.33203125
+  }
+}
+```
+
 ## external services
 
-* `http` and `https` - checks if service is available by GET request, i.e. `health:http://example.com/ping`. Response example:
-    ```json
-    {
-      "web": {
-        "body": {
-          "text": "pong"
-        },
-        "name": "web",
-        "response_time": 109,
-        "status_code": 200
+In addition to the basic checks `sys-agent` can report status of external services. Each service defined as name:url pair for supported protocols (`http`,`, `mongodb` and `docker`). Each servce will be reported as a separate element in the response and all responses have the similar structure: `name` (service name),  `status_code` (`200` or `4xx`) and `response_time` in milliseconds. The `body` includes the response details json, different for each service.
+
+### service providers (protocols)
+
+#### `http` and `https` provider
+
+Checks if service is available by GET request. 
+
+Request example: `health:https://example.com/ping`
+
+Response example:
+
+```json
+{
+  "web": {
+    "body": {
+      "text": "pong"
+    },
+    "name": "web",
+    "response_time": 109,
+    "status_code": 200
+  }
+}
+```
+
+note: `body.text` field will include the original response body if response is not json. If response is json the `body` will contain the parsed json. 
+
+#### `mongodb` provider
+
+Checks if mongo available and report status of replica set (for non-standalone configurations only). All the nodes should be in valid state and oplog time difference should be less than 60 seconds by default. User can change the default via `oplogMaxDelta` query parameter.
+
+Request examples:
+- `foo:mongodb://example.com:27017/` - check if mongo is available, no authentication
+- `bar:mongodb://user:password@example.com:27017/?authSource=admin` - check if mongo is available with authentication
+- `baz:mongodb://example.com:27017/?oplogMaxDelta=30s` - check if mongo is available and oplog difference between primary and secondary is less than 30 seconds
+
+_see [mongo connection-string](https://docs.mongodb.com/manual/reference/connection-string/) for more details_
+
+Response example:
+
+```json
+{
+  "mongo": {
+    "name": "foo",
+    "status_code": 200,
+    "response_time": 44,
+    "body": {
+      "rs": {
+        "status": "ok",
+        "optime:": "ok",
+        "info": {
+          "set":"rs1",
+          "ok":1,
+          "members":[
+            {"name":"node1.example.com:27017","state":"PRIMARY","optime":{"ts":"2022-02-03T08:47:37Z"}},
+            {"name":"node2.example.com:27017","state":"SECONDARY","optime":{"ts":"2022-02-03T08:47:37Z"}},
+            {"name":"node3.example.com:27017","state":"ARBITER","optime":{"ts":"0001-01-01T00:00:00Z"}}]},
+        }
       }
     }
-    ```
-* `mongodb` - checks if mongo available, i.e. `foo:mongodb://example.com:27017/`
-* `docker` - checks if docker service is available, i.e. `bar:docker:///var/run/docker.sock?containers=nginx:redis`. The `containers` parameter is a list of required container names separated by `:`, optional. Response example:
-  ```json
-    {
-    "docker": {
-      "body": {
-        "containers": {
-          "consul": {
-            "name": "consul",
-            "state": "running",
-            "status": "Up 3 months (healthy)"
-          },
-          "logger": {
-            "name": "logger",
-            "state": "running",
-            "status": "Up 3 months"
-          },
-          "nginx": {
-            "name": "nginx",
-            "state": "running",
-            "status": "Up 3 months"
-          },
-          "registry-v2": {
-            "name": "registry-v2",
-            "state": "running",
-            "status": "Up 3 months"
-          }
+}
+```
+
+- `rs.status` ("ok" or "failed") indicates if replica set is available and in valid state
+- `rs.optime` ("ok" or "failed") indicates if oplog time difference is less than 60 seconds or defined `oplogMaxDelta`
+
+The rest of details is a subset of the [replica status](https://docs.mongodb.com/manual/reference/command/replSetGetStatus/)
+
+#### `docker` provider
+
+Checks if docker service is available and required container (optional) are running.  The `containers` parameter is a list of required container names separated by `:`
+
+Request examples:
+- `foo:docker://example.com:2375/` - check if docker is available
+- `bar:docker:///var/run/docker.sock?containers=nginx:redis` - check if docker is available and `nginx` and `redis` containers are running
+
+- Response example:
+
+```json
+{
+  "docker": {
+    "body": {
+      "containers": {
+        "consul": {
+          "name": "consul",
+          "state": "running",
+          "status": "Up 3 months (healthy)"
         },
-        "failed": 0,
-        "healthy": 1,
-        "required": "ok",
-        "running": 4,
-        "total": 4,
-        "unhealthy": 0
+        "logger": {
+          "name": "logger",
+          "state": "running",
+          "status": "Up 3 months"
+        },
+        "nginx": {
+          "name": "nginx",
+          "state": "running",
+          "status": "Up 3 months"
+        },
+        "registry-v2": {
+          "name": "registry-v2",
+          "state": "running",
+          "status": "Up 3 months"
+        }
       },
-      "name": "docker",
-      "response_time": 2,
-      "status_code": 200
-    }
+      "failed": 0,
+      "healthy": 1,
+      "required": "ok",
+      "running": 4,
+      "total": 4,
+      "unhealthy": 0
+    },
+    "name": "docker",
+    "response_time": 2,
+    "status_code": 200
   }
-  ```
-  - failed - number of failed or non-running containers
-  - healthy - number of healthy containers, only for those with health check
-  - unhealthy - number of unhealthy containers, only for those with health check
-  - required - ok if all required containers are running, otherwise failed with a list of failed containers
+}
+```
+
+- `docker.body.failed` - number of failed or non-running containers
+- `docker.body.healthy` - number of healthy containers, only for those with health check
+- `docker.body.unhealthy` - number of unhealthy containers, only for those with health check
+- `docker.body.required` - "ok" if all required containers are running, otherwise "failed" with a list of failed containers
 
 ## api
 
