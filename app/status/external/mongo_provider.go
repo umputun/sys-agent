@@ -31,8 +31,8 @@ func (m *MongoProvider) Status(req Request) (*Response, error) {
 		return nil, fmt.Errorf("mongo connect failed: %s %s: %w", req.Name, req.URL, err)
 	}
 	defer func() {
-		if err := client.Disconnect(ctx); err != nil {
-			log.Printf("[WARN] mongo disconnect failed: %s %s: %v", req.Name, req.URL, err)
+		if e := client.Disconnect(ctx); e != nil {
+			log.Printf("[WARN] mongo disconnect failed: %s %s: %v", req.Name, req.URL, e)
 		}
 	}()
 
@@ -69,7 +69,7 @@ func (m *MongoProvider) replStatus(ctx context.Context, client *mdrv.Client, req
 		oplogMaxDelta = d
 	}
 
-	rs := client.Database("admin").RunCommand(ctx, bson.D{{"replSetGetStatus", 1}})
+	rs := client.Database("admin").RunCommand(ctx, bson.M{"replSetGetStatus": 1})
 	if rs.Err() != nil {
 		if !strings.Contains(rs.Err().Error(), "NoReplicationEnabled") {
 			return nil, fmt.Errorf("mongo replset can't be extracted: %w", rs.Err())
