@@ -78,14 +78,17 @@ func (m *MongoProvider) replStatus(ctx context.Context, client *mdrv.Client, req
 	}
 
 	var replset struct {
+		Set     string `bson:"set" json:"set"`
+		OK      int    `bson:"ok" json:"ok"`
 		Members []struct {
-			Name     string `bson:"name"`
-			StateStr string `bson:"stateStr"`
+			Name     string `bson:"name" json:"name"`
+			StateStr string `bson:"stateStr" json:"state"`
 			Optime   struct {
-				TS time.Time `bson:"ts"`
-			} `bson:"optime"`
-		} `bson:"members"`
+				TS time.Time `bson:"ts" json:"ts"`
+			} `bson:"optime" json:"optime"`
+		} `bson:"members" json:"members"`
 	}
+
 	if err := rs.Decode(&replset); err != nil {
 		return nil, fmt.Errorf("mongo replset can't be decoded: %w", err)
 	}
@@ -94,16 +97,19 @@ func (m *MongoProvider) replStatus(ctx context.Context, client *mdrv.Client, req
 	}
 
 	primOptime := replset.Members[0].Optime.TS
-	status, optime := true, true
+	status, optime := "ok", "ok"
 	for _, m := range replset.Members {
 		if m.StateStr != "PRIMARY" && m.StateStr != "SECONDARY" && m.StateStr != "ARBITER" {
-			status = false
+			status = "failed"
 			break
 		}
 		if m.StateStr == "SECONDARY" && primOptime.Sub(m.Optime.TS) > oplogMaxDelta {
-			optime = false
+			optime = "failed"
 			break
 		}
+	}
+	if replset.OK != 1 {
+		status = "failed"
 	}
 
 	return bson.M{"info": replset, "status": status, "optime": optime}, nil
