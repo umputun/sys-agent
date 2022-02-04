@@ -52,12 +52,14 @@ func (m *MongoProvider) Status(req Request) (*Response, error) {
 		Body:         map[string]interface{}{"status": "ok"},
 		ResponseTime: time.Since(st).Milliseconds(),
 	}
-	if rs["info"] != nil {
+	if rs["info"] != nil { // nil if no replset
 		result.Body["rs"] = rs
 	}
 	return &result, nil
 }
 
+// replStatus gets replica set status if mongo configured as replica set
+// for standalone mongo returns nil map
 func (m *MongoProvider) replStatus(ctx context.Context, client *mdrv.Client, req *url.URL) (bson.M, error) {
 
 	oplogMaxDelta := time.Minute
@@ -74,7 +76,7 @@ func (m *MongoProvider) replStatus(ctx context.Context, client *mdrv.Client, req
 		if !strings.Contains(rs.Err().Error(), "NoReplicationEnabled") {
 			return nil, fmt.Errorf("mongo replset can't be extracted: %w", rs.Err())
 		}
-		return nil, nil
+		return nil, nil // standalone mongo
 	}
 
 	var replset struct {
