@@ -1,3 +1,4 @@
+//go:build darwin
 // +build darwin
 
 package net
@@ -6,11 +7,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/shirou/gopsutil/v3/internal/common"
 	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/shirou/gopsutil/v3/internal/common"
 )
 
 var (
@@ -255,7 +257,7 @@ func IOCountersWithContext(ctx context.Context, pernic bool) ([]IOCountersStat, 
 	return ret, nil
 }
 
-// NetIOCountersByFile is an method which is added just a compatibility for linux.
+// IOCountersByFile exists just for compatibility with Linux.
 func IOCountersByFile(pernic bool, filename string) ([]IOCountersStat, error) {
 	return IOCountersByFileWithContext(context.Background(), pernic, filename)
 }
