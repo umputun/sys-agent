@@ -91,9 +91,38 @@ func (m *MongoProvider) replStatus(ctx context.Context, client *mdrv.Client, req
 		} `bson:"members" json:"members"`
 	}
 
-	if err := rs.Decode(&replset); err != nil {
-		return nil, fmt.Errorf("mongo replset can't be decoded: %w", err)
+	var replsetOldVer struct {
+		Set     string `bson:"set" json:"set"`
+		OK      int    `bson:"myState" json:"myState"`
+		Members []struct {
+			Name     string    `bson:"name" json:"name"`
+			StateStr string    `bson:"stateStr" json:"state"`
+			Optime   time.Time `bson:"optimeDate" json:"optimeDate"`
+		} `bson:"members" json:"members"`
 	}
+
+	if err := rs.Decode(&replset); err != nil {
+		if err := rs.Decode(&replsetOldVer); err != nil {
+			return nil, fmt.Errorf("mongo replset can't be extracted: %w", err)
+		}
+		replset.Set = replsetOldVer.Set
+		replset.OK = replsetOldVer.OK
+		for _, m := range replsetOldVer.Members {
+			member := struct {
+				Name     string `bson:"name" json:"name"`
+				StateStr string `bson:"stateStr" json:"state"`
+				Optime   struct {
+					TS time.Time `bson:"ts" json:"ts"`
+				} `bson:"optime" json:"optime"`
+			}{
+				Name:     m.Name,
+				StateStr: m.StateStr,
+			}
+			member.Optime.TS = m.Optime
+			replset.Members = append(replset.Members, member)
+		}
+	}
+
 	if len(replset.Members) == 0 {
 		return nil, fmt.Errorf("mongo replset is empty")
 	}
