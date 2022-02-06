@@ -38,7 +38,7 @@ func (p *ProgramProvider) Status(req Request) (*Response, error) {
 
 	log.Printf("[DEBUG] command: %s %s", command, args)
 
-	cmd := exec.CommandContext(ctx, command, args)
+	cmd := exec.CommandContext(ctx, command, args) //nolint:gosec // we trust the command as it comes from the config
 	if p.WithShell {
 		command = fmt.Sprintf("sh -c %q", command+" "+args)
 	}
