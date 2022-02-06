@@ -33,6 +33,7 @@ func TestDockerProvider_Status(t *testing.T) {
 	resp, err := p.Status(Request{Name: "d1", URL: strings.Replace(ts.URL, "http://", "tcp://", 1)})
 	require.NoError(t, err)
 	assert.Equal(t, 200, resp.StatusCode)
+	assert.True(t, resp.ResponseTime > 1, resp.ResponseTime)
 }
 
 func TestDockerProvider_StatusWithRequired(t *testing.T) {

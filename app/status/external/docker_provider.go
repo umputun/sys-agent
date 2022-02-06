@@ -23,6 +23,7 @@ type DockerProvider struct {
 // i.e. docker:///var/run/docker.sock?containers=foo,bar
 func (d *DockerProvider) Status(req Request) (*Response, error) {
 
+	st := time.Now()
 	u := strings.Replace(req.URL, "docker://", "tcp://", 1)
 	if strings.HasPrefix(req.URL, "docker:///") { // i.e. docker:///var/run/docker.sock
 		u = strings.Replace(req.URL, "docker://", "unix://", 1)
@@ -68,9 +69,10 @@ func (d *DockerProvider) Status(req Request) (*Response, error) {
 	}
 
 	result := Response{
-		Name:       req.Name,
-		StatusCode: resp.StatusCode,
-		Body:       dkinfo,
+		Name:         req.Name,
+		StatusCode:   resp.StatusCode,
+		Body:         dkinfo,
+		ResponseTime: time.Since(st).Milliseconds(),
 	}
 	return &result, nil
 }
