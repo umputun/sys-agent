@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-pkgz/mongo/v2"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	mdrv "go.mongodb.org/mongo-driver/mongo"
 
 	mopt "go.mongodb.org/mongo-driver/mongo/options"
@@ -52,7 +53,7 @@ func (m *MongoProvider) Status(req Request) (*Response, error) {
 		Body:         map[string]interface{}{"status": "ok"},
 		ResponseTime: time.Since(st).Milliseconds(),
 	}
-	if rs["info"] != nil { // nil if no replset
+	if rs != nil {
 		result.Body["rs"] = rs
 	}
 	return &result, nil
@@ -60,16 +61,7 @@ func (m *MongoProvider) Status(req Request) (*Response, error) {
 
 // replStatus gets replica set status if mongo configured as replica set
 // for standalone mongo returns nil map
-func (m *MongoProvider) replStatus(ctx context.Context, client *mdrv.Client, req *url.URL) (bson.M, error) {
-
-	oplogMaxDelta := time.Minute
-	if req.Query().Get("oplogMaxDelta") != "" {
-		d, err := time.ParseDuration(req.Query().Get("oplogMaxDelta"))
-		if err != nil {
-			return nil, fmt.Errorf("can't parse oplogMaxDelta: %s: %w", req.Host, err)
-		}
-		oplogMaxDelta = d
-	}
+func (m *MongoProvider) replStatus(ctx context.Context, client *mdrv.Client, req *url.URL) (*replSet, error) {
 
 	rs := client.Database("admin").RunCommand(ctx, bson.M{"replSetGetStatus": 1})
 	if rs.Err() != nil {
@@ -79,69 +71,100 @@ func (m *MongoProvider) replStatus(ctx context.Context, client *mdrv.Client, req
 		return nil, nil // standalone mongo
 	}
 
-	var replset struct {
-		Set     string `bson:"set" json:"set"`
-		OK      int    `bson:"ok" json:"ok"`
-		Members []struct {
-			Name     string `bson:"name" json:"name"`
-			StateStr string `bson:"stateStr" json:"state"`
-			Optime   struct {
-				TS time.Time `bson:"ts" json:"ts"`
-			} `bson:"optime" json:"optime"`
-		} `bson:"members" json:"members"`
+	rr := bson.M{}
+	if err := rs.Decode(&rr); err != nil {
+		return nil, fmt.Errorf("mongo replset info can't be decoded: %w", err)
 	}
 
-	var replsetOldVer struct {
-		Set     string `bson:"set" json:"set"`
-		OK      int    `bson:"myState" json:"myState"`
-		Members []struct {
-			Name     string    `bson:"name" json:"name"`
-			StateStr string    `bson:"stateStr" json:"state"`
-			Optime   time.Time `bson:"optimeDate" json:"optimeDate"`
-		} `bson:"members" json:"members"`
+	rsInfo, err := m.parseReplStatus(req, rr)
+	if err != nil {
+		return nil, fmt.Errorf("mongo replset info can't be parsed: %w", err)
 	}
+	return rsInfo, nil
+}
 
-	if err := rs.Decode(&replset); err != nil {
-		if err := rs.Decode(&replsetOldVer); err != nil {
-			return nil, fmt.Errorf("mongo replset can't be extracted: %w", err)
+type replSet struct {
+	Set          string          `json:"set"`
+	Status       string          `json:"status"`
+	OptimeStatus string          `json:"optime"`
+	Members      []replSetMember `json:"members"`
+}
+
+type replSetMember struct {
+	Name   string    `json:"name"`
+	State  string    `json:"state"`
+	Optime time.Time `json:"optime"`
+}
+
+// parseReplStatus parses replSet status bson.M and returns replSet struct
+// it supports multiple flavors of replSet status returned by various mongo versions
+func (m *MongoProvider) parseReplStatus(req *url.URL, data bson.M) (res *replSet, err error) {
+
+	defer func() {
+		// the code below doing type assertions. Even if each case is covered/checked we better have recover, just in case
+		if r := recover(); r != nil {
+			err = fmt.Errorf("failed: %v", r)
 		}
-		replset.Set = replsetOldVer.Set
-		replset.OK = replsetOldVer.OK
-		for _, m := range replsetOldVer.Members {
-			member := struct {
-				Name     string `bson:"name" json:"name"`
-				StateStr string `bson:"stateStr" json:"state"`
-				Optime   struct {
-					TS time.Time `bson:"ts" json:"ts"`
-				} `bson:"optime" json:"optime"`
-			}{
-				Name:     m.Name,
-				StateStr: m.StateStr,
+	}()
+
+	oplogMaxDelta := time.Minute
+	if req.Query().Get("oplogMaxDelta") != "" {
+		d, err := time.ParseDuration(req.Query().Get("oplogMaxDelta"))
+		if err != nil {
+			return nil, fmt.Errorf("can't parse oplogMaxDelta: %s: %w", req.Host, err)
+		}
+		oplogMaxDelta = d
+	}
+	members, ok := data["members"].(primitive.A)
+	if !ok {
+		return nil, fmt.Errorf("mongo replset members can't be extracted: %+v", data["members"])
+	}
+
+	replset := &replSet{
+		OptimeStatus: "ok",
+		Status:       "ok",
+	}
+
+	if replset.Set, ok = data["set"].(string); !ok {
+		return nil, fmt.Errorf("mongo replset set can't be extracted: %+v", data["set"])
+	}
+
+	for _, m := range members {
+		member := replSetMember{}
+		if member.Name, ok = m.(bson.M)["name"].(string); !ok {
+			return nil, fmt.Errorf("mongo replset member name can't be extracted: %+v", m)
+		}
+		if member.State, ok = m.(bson.M)["stateStr"].(string); !ok {
+			return nil, fmt.Errorf("mongo replset member state can't be extracted: %+v", m)
+		}
+
+		switch v := m.(bson.M)["optime"].(type) {
+		case time.Time:
+			member.Optime = v
+		case primitive.M:
+			ts, ok := v["ts"].(primitive.Timestamp)
+			if !ok {
+				return nil, fmt.Errorf("mongo replset member optime can't be extracted: %+v", m)
 			}
-			member.Optime.TS = m.Optime
-			replset.Members = append(replset.Members, member)
+			member.Optime = time.Unix(int64(ts.T), int64(ts.I))
 		}
+		replset.Members = append(replset.Members, member)
 	}
-
 	if len(replset.Members) == 0 {
 		return nil, fmt.Errorf("mongo replset is empty")
 	}
 
-	primOptime := replset.Members[0].Optime.TS
-	status, optime := "ok", "ok"
+	primOptime := replset.Members[0].Optime
 	for _, m := range replset.Members {
-		if m.StateStr != "PRIMARY" && m.StateStr != "SECONDARY" && m.StateStr != "ARBITER" {
-			status = "failed"
+		if m.State != "PRIMARY" && m.State != "SECONDARY" && m.State != "ARBITER" {
+			replset.Status = fmt.Sprintf("failed, invalid state %s for %s", m.State, m.Name)
 			break
 		}
-		if m.StateStr == "SECONDARY" && primOptime.Sub(m.Optime.TS) > oplogMaxDelta {
-			optime = "failed"
+		if m.State == "SECONDARY" && primOptime.Sub(m.Optime) > oplogMaxDelta {
+			replset.OptimeStatus = fmt.Sprintf("failed, optime difference for %s is %v", m.Name, primOptime.Sub(m.Optime))
 			break
 		}
-	}
-	if replset.OK != 1 {
-		status = "failed"
 	}
 
-	return bson.M{"info": replset, "status": status, "optime": optime}, nil
+	return replset, nil
 }
