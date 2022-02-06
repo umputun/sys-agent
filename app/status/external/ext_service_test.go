@@ -47,12 +47,16 @@ func TestService_Status(t *testing.T) {
 	pd := &StatusProviderMock{StatusFunc: func(r Request) (*Response, error) {
 		return &Response{StatusCode: 202, Name: "docker"}, nil
 	}}
+	pp := &StatusProviderMock{StatusFunc: func(r Request) (*Response, error) {
+		return &Response{StatusCode: 203, Name: "program"}, nil
+	}}
 
-	s := NewService(Providers{ph, pm, pd}, 4,
-		"s1:http://127.0.0.1/ping", "s2:docker:///var/blah", "s3:mongodb://127.0.0.1:27017", "bad:bad")
+	s := NewService(Providers{ph, pm, pd, pp}, 4,
+		"s1:http://127.0.0.1/ping", "s2:docker:///var/blah", "s3:mongodb://127.0.0.1:27017",
+		"s4:program://ls?arg=1", "bad:bad")
 
 	res := s.Status()
-	require.Equal(t, 4, len(res))
+	require.Equal(t, 5, len(res))
 	assert.Equal(t, 1, len(ph.StatusCalls()))
 	assert.Equal(t, Request{Name: "s1", URL: "http://127.0.0.1/ping"}, ph.StatusCalls()[0].Req)
 
@@ -61,6 +65,9 @@ func TestService_Status(t *testing.T) {
 
 	assert.Equal(t, 1, len(pd.StatusCalls()))
 	assert.Equal(t, Request{Name: "s3", URL: "mongodb://127.0.0.1:27017"}, pm.StatusCalls()[0].Req)
+
+	assert.Equal(t, 1, len(pp.StatusCalls()))
+	assert.Equal(t, Request{Name: "s4", URL: "program://ls?arg=1"}, pp.StatusCalls()[0].Req)
 
 	assert.Equal(t, "bad", res[0].Name)
 	assert.Equal(t, 500, res[0].StatusCode)
@@ -73,4 +80,7 @@ func TestService_Status(t *testing.T) {
 
 	assert.Equal(t, "mongo", res[3].Name)
 	assert.Equal(t, 201, res[3].StatusCode)
+
+	assert.Equal(t, "program", res[4].Name)
+	assert.Equal(t, 203, res[4].StatusCode)
 }

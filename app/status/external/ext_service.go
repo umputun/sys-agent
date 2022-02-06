@@ -22,9 +22,10 @@ type Service struct {
 
 // Providers is a list of StatusProvider
 type Providers struct {
-	HTTP   StatusProvider
-	Mongo  StatusProvider
-	Docker StatusProvider
+	HTTP    StatusProvider
+	Mongo   StatusProvider
+	Docker  StatusProvider
+	Program StatusProvider
 }
 
 // StatusProvider is an interface for getting status from external services
@@ -95,6 +96,9 @@ func (s *Service) Status() []Response {
 				resp, err = s.providers.Mongo.Status(r)
 			case strings.HasPrefix(r.URL, "docker://"):
 				resp, err = s.providers.Docker.Status(r)
+			case strings.HasPrefix(r.URL, "program://"):
+				resp, err = s.providers.Program.Status(r)
+
 			default:
 				log.Printf("[WARN] unsupported protocol for service, %s %s", r.Name, r.URL)
 				ch <- Response{Name: r.Name, StatusCode: http.StatusInternalServerError, ResponseTime: time.Since(st).Milliseconds()}

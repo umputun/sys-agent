@@ -185,7 +185,32 @@ Request examples:
 - `docker.body.unhealthy` - number of unhealthy containers, only for those with health check
 - `docker.body.required` - "ok" if all required containers are running, otherwise "failed" with a list of failed containers
 
-## api
+#### `program` provider
+
+This check runs any predefined program/script and checks the exit code. All commands are executed in shell.
+
+Request examples:
+- `foo:program://ps?args=-ef` - runs `ps -ef` and checks exit code
+- `bar:program:///tmp/foo/bar.sh` - runs /tmp/foo/bar.sh and checks exit code
+
+- Response example:
+
+```json
+{
+  "program": {
+    "name": "foo",
+    "status_code": 20,
+    "response_time": 44,
+    "body": {
+      "command": "ps -ef",
+      "stdout": "some output",
+      "status": "ok"
+    }
+  }
+}
+```
+
+## API
 
  - `GET /status` - returns server status in JSON format
  - `GET /ping` - returns `pong`
