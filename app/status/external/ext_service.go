@@ -26,6 +26,7 @@ type Providers struct {
 	Mongo   StatusProvider
 	Docker  StatusProvider
 	Program StatusProvider
+	Nginx   StatusProvider
 }
 
 // StatusProvider is an interface for getting status from external services
@@ -98,6 +99,8 @@ func (s *Service) Status() []Response {
 				resp, err = s.providers.Docker.Status(r)
 			case strings.HasPrefix(r.URL, "program://"):
 				resp, err = s.providers.Program.Status(r)
+			case strings.HasPrefix(r.URL, "nginx://"):
+				resp, err = s.providers.Nginx.Status(r)
 
 			default:
 				log.Printf("[WARN] unsupported protocol for service, %s %s", r.Name, r.URL)

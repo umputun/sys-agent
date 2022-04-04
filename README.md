@@ -199,7 +199,7 @@ Request examples:
 {
   "program": {
     "name": "foo",
-    "status_code": 20,
+    "status_code": 200,
     "response_time": 44,
     "body": {
       "command": "ps -ef",
@@ -209,6 +209,41 @@ Request examples:
   }
 }
 ```
+
+#### `nginx` provider
+
+This check runs request to nginx status page, checks and parse the response. In order to use this provider you need to have nginx with enabled `stub_status`.
+
+```nginx
+    location /nginx_status {
+        stub_status on;
+        access_log   off;
+    }
+```
+request examples: `nginx-status:nginx://example.com:8080/nginx_status` 
+
+This provider parser the response and returns the following response:
+
+```json
+{
+  "nginx": {
+    "name": "nginx-status",
+    "status_code": 200,
+    "response_time": 12,
+    "body": {
+      "active_connections": 123,
+      "accepts": 456,
+      "handled": 789,
+      "requests": 101112,
+      "reading": 131,
+      "writing": 132,
+      "change_handled": 111,
+    }
+  }
+}
+```
+
+All the values are parsed directly from the response except `change_handled` which is a difference between two subsequent `handled` values.
 
 ## API
 

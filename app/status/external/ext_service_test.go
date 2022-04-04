@@ -50,8 +50,11 @@ func TestService_Status(t *testing.T) {
 	pp := &StatusProviderMock{StatusFunc: func(r Request) (*Response, error) {
 		return &Response{StatusCode: 203, Name: "program"}, nil
 	}}
+	pn := &StatusProviderMock{StatusFunc: func(r Request) (*Response, error) {
+		return &Response{StatusCode: 203, Name: "nginx"}, nil
+	}}
 
-	s := NewService(Providers{ph, pm, pd, pp}, 4,
+	s := NewService(Providers{ph, pm, pd, pp, pn}, 4,
 		"s1:http://127.0.0.1/ping", "s2:docker:///var/blah", "s3:mongodb://127.0.0.1:27017",
 		"s4:program://ls?arg=1", "bad:bad")
 
