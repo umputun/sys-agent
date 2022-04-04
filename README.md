@@ -222,7 +222,7 @@ This check runs request to nginx status page, checks and parse the response. In 
 ```
 request examples: `nginx-status:nginx://example.com:8080/nginx_status` 
 
-This provider parser the response and returns the following response:
+This provider parser the nginx's response and returns the following:
 
 ```json
 {
