@@ -72,6 +72,7 @@ func main() {
 		Mongo:   &external.MongoProvider{TimeOut: opts.TimeOut},
 		Docker:  &external.DockerProvider{TimeOut: opts.TimeOut},
 		Program: &external.ProgramProvider{TimeOut: opts.TimeOut, WithShell: true},
+		Nginx:   &external.NginxProvider{TimeOut: opts.TimeOut},
 	}
 
 	srv := server.Rest{
