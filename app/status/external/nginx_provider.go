@@ -3,7 +3,6 @@ package external
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -40,7 +39,7 @@ func (n *NginxProvider) Status(req Request) (*Response, error) {
 			return nil, errors.Wrapf(err, "both https and http failed for %s", req.URL)
 		}
 	}
-	defer resp.Body.Close() // nolint: errcheck
+	defer resp.Body.Close() // nolint
 	result.StatusCode = resp.StatusCode
 	result.ResponseTime = time.Since(st).Milliseconds()
 
@@ -58,7 +57,7 @@ func (n *NginxProvider) Status(req Request) (*Response, error) {
 
 func (n *NginxProvider) parseResponse(r io.Reader) (map[string]interface{}, error) {
 	result := make(map[string]interface{})
-	body, err := ioutil.ReadAll(r)
+	body, err := io.ReadAll(r)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read response")
 	}
