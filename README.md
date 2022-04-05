@@ -2,11 +2,11 @@
 
 System agent is a simple service reporting server status via HTTP GET request. It is useful for monitoring and debugging purposes, but usually used as a part of some other monitoring system collecting data and serving it. One of such systems is [gatus](https://github.com/TwiN/gatus), and it works fine with `sys-agent`.
 
-`sys-agent` can run directly on a server (systemd service provided) or as a docker container (mutli-arch container provided).
+`sys-agent` can run directly on a server (systemd service provided) or as a docker container (multi-arch container provided).
 
 All the configuration is done via a few command line options/environment variables. Generally, user should define a list of data volumes to be reported and optional external services to be checked. Volumes report capacity/utilization. CPU related metrics, like LAs, overall utilization and number of running processes are always reported, as well as memory usage.
 
-The idea of external services is to be able to integrate status of all related services into a single response. This way a singe json response can report instance metrice as well as status of http health check, status of running containers, etc.
+The idea of external services is to be able to integrate status of all related services into a single response. This way a singe json response can report instance metrics as well as status of http health check, status of running containers, etc.
 
 ## usage
 
@@ -222,7 +222,7 @@ This check runs request to nginx status page, checks and parse the response. In 
 ```
 request examples: `nginx-status:nginx://example.com:8080/nginx_status` 
 
-This provider parser the nginx's response and returns the following:
+This provider parses the nginx's response and returns the following:
 
 ```json
 {
