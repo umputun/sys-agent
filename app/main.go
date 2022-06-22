@@ -68,11 +68,12 @@ func main() {
 	}
 
 	providers := external.Providers{
-		HTTP:    &external.HTTPProvider{Client: http.Client{Timeout: opts.TimeOut}},
-		Mongo:   &external.MongoProvider{TimeOut: opts.TimeOut},
-		Docker:  &external.DockerProvider{TimeOut: opts.TimeOut},
-		Program: &external.ProgramProvider{TimeOut: opts.TimeOut, WithShell: true},
-		Nginx:   &external.NginxProvider{TimeOut: opts.TimeOut},
+		HTTP:        &external.HTTPProvider{Client: http.Client{Timeout: opts.TimeOut}},
+		Mongo:       &external.MongoProvider{TimeOut: opts.TimeOut},
+		Docker:      &external.DockerProvider{TimeOut: opts.TimeOut},
+		Program:     &external.ProgramProvider{TimeOut: opts.TimeOut, WithShell: true},
+		Nginx:       &external.NginxProvider{TimeOut: opts.TimeOut},
+		Certificate: &external.CertificateProvider{TimeOut: opts.TimeOut},
 	}
 
 	srv := server.Rest{

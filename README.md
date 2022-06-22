@@ -245,6 +245,32 @@ This provider parses the nginx's response and returns the following:
 
 All the values are parsed directly from the response except `change_handled` which is a difference between two subsequent `handled` values.
 
+#### certificate provider
+
+Checks if certificate expired or going to expire in the next 5 days.
+
+Request examples:
+- `foo:cert://example.com` - check if certificate is ok for https://example.com
+- `bar:cert://umputun.com` - check if certificate is ok for https://umputun.com
+
+
+- Response example:
+
+```json
+{
+  "cert": {
+    "name": "bar",
+    "status_code": 200,
+    "response_time": 44,
+    "body": {
+      "days_left": 73,,
+      "expire": "2022-09-03T16:31:52Z",
+      "status": "ok"
+    }
+  }
+}
+```
+
 ## API
 
  - `GET /status` - returns server status in JSON format
