@@ -18,7 +18,7 @@ type CertificateProvider struct {
 func (c *CertificateProvider) Status(req Request) (*Response, error) {
 	st := time.Now()
 	addr := strings.TrimPrefix(req.URL, "cert://") + ":443"
-	conn, err := tls.Dial("tcp", addr, &tls.Config{})
+	conn, err := tls.Dial("tcp", addr, &tls.Config{}) //nolint:gosec // we don't care about cert version
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to connect to %s", addr)
 	}
@@ -35,7 +35,7 @@ func (c *CertificateProvider) Status(req Request) (*Response, error) {
 		}
 	}
 
-	daysLeft := int(earlierCert.Sub(time.Now()).Hours() / 24)
+	daysLeft := int(time.Until(earlierCert).Hours() / 24)
 	body := map[string]interface{}{
 		"expire":    earlierCert.Format(time.RFC3339),
 		"days_left": daysLeft,
