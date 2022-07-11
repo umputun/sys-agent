@@ -15,6 +15,7 @@ type HTTPProvider struct {
 
 // Status returns the status of the external service via HTTP GET
 func (h *HTTPProvider) Status(req Request) (*Response, error) {
+
 	st := time.Now()
 	resp, err := h.Get(req.URL)
 	if err != nil {
