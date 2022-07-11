@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 // CertificateProvider is a status provider that check SSL certificate
@@ -20,10 +18,10 @@ func (c *CertificateProvider) Status(req Request) (*Response, error) {
 	addr := strings.TrimPrefix(req.URL, "cert://") + ":443"
 	conn, err := tls.Dial("tcp", addr, &tls.Config{}) //nolint:gosec // we don't care about cert version
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to connect to %s", addr)
+		return nil, fmt.Errorf("failed to connect to %s: %w", addr, err)
 	}
 	if err = conn.Handshake(); err != nil {
-		return nil, errors.Wrapf(err, "failed to handshake with %s", addr)
+		return nil, fmt.Errorf("failed to handshake with %s: %w", addr, err)
 	}
 	defer conn.Close() // nolint
 

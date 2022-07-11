@@ -1,14 +1,13 @@
 package external
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 // NginxProvider is a status provider that uses nginx status response
@@ -36,7 +35,7 @@ func (n *NginxProvider) Status(req Request) (*Response, error) {
 		u = strings.Replace(req.URL, "nginx://", "http://", 1)
 		resp, err = client.Get(u)
 		if err != nil {
-			return nil, errors.Wrapf(err, "both https and http failed for %s", req.URL)
+			return nil, fmt.Errorf("both https and http failed for %s: %w", req.URL, err)
 		}
 	}
 	defer resp.Body.Close() // nolint
@@ -49,7 +48,7 @@ func (n *NginxProvider) Status(req Request) (*Response, error) {
 
 	ngStats, err := n.parseResponse(resp.Body)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse nginx response for %s", req.URL)
+		return nil, fmt.Errorf("failed to parse nginx response for %s: %w", req.URL, err)
 	}
 	result.Body = ngStats
 	return result, nil
@@ -59,7 +58,7 @@ func (n *NginxProvider) parseResponse(r io.Reader) (map[string]interface{}, erro
 	result := make(map[string]interface{})
 	body, err := io.ReadAll(r)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to read response")
+		return nil, fmt.Errorf("failed to read response: %w", err)
 	}
 	lines := strings.Split(string(body), "\n")
 	if len(lines) < 4 {
@@ -71,7 +70,7 @@ func (n *NginxProvider) parseResponse(r io.Reader) (map[string]interface{}, erro
 	}
 	active, err := strconv.Atoi(strings.TrimSpace(strings.Split(strings.TrimSpace(lines[0]), ":")[1]))
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse active connections %s", lines[0])
+		return nil, fmt.Errorf("failed to parse active connections %s: %w", lines[0], err)
 	}
 	result["active_connections"] = active
 
@@ -86,19 +85,19 @@ func (n *NginxProvider) parseResponse(r io.Reader) (map[string]interface{}, erro
 
 	accepts, err := strconv.Atoi(elems[0])
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse accepts %s", lines[2])
+		return nil, fmt.Errorf("failed to parse accepts %s: %w", lines[2], err)
 	}
 	result["accepts"] = accepts
 
 	handled, err := strconv.Atoi(elems[1])
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse handled %s", lines[2])
+		return nil, fmt.Errorf("failed to parse handled %s: %v", lines[2], err)
 	}
 	result["handled"] = handled
 
 	requests, err := strconv.Atoi(elems[2])
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse requests %s", lines[2])
+		return nil, fmt.Errorf("failed to parse requests %s: %v", lines[2], err)
 	}
 	result["requests"] = requests
 
@@ -115,19 +114,19 @@ func (n *NginxProvider) parseResponse(r io.Reader) (map[string]interface{}, erro
 
 	reading, err := strconv.Atoi(elems[0])
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse reading %s", lines[2])
+		return nil, fmt.Errorf("failed to parse reading %s: %v", lines[2], err)
 	}
 	result["reading"] = reading
 
 	writing, err := strconv.Atoi(elems[1])
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse writing %s", lines[2])
+		return nil, fmt.Errorf("failed to parse writing %s: %v", lines[2], err)
 	}
 	result["writing"] = writing
 
 	waiting, err := strconv.Atoi(elems[2])
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse waiting %s", lines[2])
+		return nil, fmt.Errorf("failed to parse waiting %s: %v", lines[2], err)
 	}
 	result["waiting"] = waiting
 

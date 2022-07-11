@@ -1,4 +1,4 @@
-FROM umputun/baseimage:buildgo-v1.8.0  as build
+FROM umputun/baseimage:buildgo-latest  as build
 
 ARG GIT_BRANCH
 ARG GITHUB_SHA
