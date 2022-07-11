@@ -56,13 +56,15 @@ func TestService_Status(t *testing.T) {
 	pc := &StatusProviderMock{StatusFunc: func(r Request) (*Response, error) {
 		return &Response{StatusCode: 204, Name: "cert"}, nil
 	}}
-
-	s := NewService(Providers{ph, pm, pd, pp, pn, pc}, 4,
+	pf := &StatusProviderMock{StatusFunc: func(r Request) (*Response, error) {
+		return &Response{StatusCode: 205, Name: "file"}, nil
+	}}
+	s := NewService(Providers{ph, pm, pd, pp, pn, pc, pf}, 4,
 		"s1:http://127.0.0.1/ping", "s2:docker:///var/blah", "s3:mongodb://127.0.0.1:27017",
-		"s4:program://ls?arg=1", "s5:cert://umputun.com", "bad:bad")
+		"s4:program://ls?arg=1", "s5:cert://umputun.com", "s6:file://blah.txt", "bad:bad")
 
 	res := s.Status()
-	require.Equal(t, 6, len(res))
+	require.Equal(t, 7, len(res))
 	assert.Equal(t, 1, len(ph.StatusCalls()))
 	assert.Equal(t, Request{Name: "s1", URL: "http://127.0.0.1/ping"}, ph.StatusCalls()[0].Req)
 
@@ -84,13 +86,15 @@ func TestService_Status(t *testing.T) {
 	assert.Equal(t, "docker", res[2].Name)
 	assert.Equal(t, 202, res[2].StatusCode)
 
-	assert.Equal(t, "http", res[3].Name)
-	assert.Equal(t, 200, res[3].StatusCode)
+	assert.Equal(t, "file", res[3].Name)
+	assert.Equal(t, 205, res[3].StatusCode)
 
-	assert.Equal(t, "mongo", res[4].Name)
-	assert.Equal(t, 201, res[4].StatusCode)
+	assert.Equal(t, "http", res[4].Name)
+	assert.Equal(t, 200, res[4].StatusCode)
 
-	assert.Equal(t, "program", res[5].Name)
-	assert.Equal(t, 203, res[5].StatusCode)
+	assert.Equal(t, "mongo", res[5].Name)
+	assert.Equal(t, 201, res[5].StatusCode)
 
+	assert.Equal(t, "program", res[6].Name)
+	assert.Equal(t, 203, res[6].StatusCode)
 }

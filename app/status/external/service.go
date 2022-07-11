@@ -28,6 +28,7 @@ type Providers struct {
 	Program     StatusProvider
 	Nginx       StatusProvider
 	Certificate StatusProvider
+	File        StatusProvider
 }
 
 // StatusProvider is an interface for getting status from external services
@@ -104,6 +105,8 @@ func (s *Service) Status() []Response {
 				resp, err = s.providers.Nginx.Status(r)
 			case strings.HasPrefix(r.URL, "cert://"):
 				resp, err = s.providers.Certificate.Status(r)
+			case strings.HasPrefix(r.URL, "file://"):
+				resp, err = s.providers.File.Status(r)
 
 			default:
 				log.Printf("[WARN] unsupported protocol for service, %s %s", r.Name, r.URL)

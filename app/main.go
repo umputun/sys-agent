@@ -74,6 +74,7 @@ func main() {
 		Program:     &external.ProgramProvider{TimeOut: opts.TimeOut, WithShell: true},
 		Nginx:       &external.NginxProvider{TimeOut: opts.TimeOut},
 		Certificate: &external.CertificateProvider{TimeOut: opts.TimeOut},
+		File:        &external.FileProvider{TimeOut: opts.TimeOut},
 	}
 
 	srv := server.Rest{

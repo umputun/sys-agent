@@ -14,7 +14,9 @@ type HTTPProvider struct {
 }
 
 // Status returns the status of the external service via HTTP GET
+// url looks like this: file://blah/foo.txt (relative path) or file:///blah/foo.txt (absolute path)
 func (h *HTTPProvider) Status(req Request) (*Response, error) {
+
 	st := time.Now()
 	resp, err := h.Get(req.URL)
 	if err != nil {

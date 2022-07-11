@@ -271,6 +271,33 @@ Request examples:
 }
 ```
 
+#### file provider
+
+Checks if file present and sets stats info
+
+Request examples:
+- `foo:file://foo/bar.txt` - check if file with relative path exists and sets stats info
+- `bar:cert:///srv/foo/bar.txt` - check if file with absolute path exists and sets stats info
+
+
+- Response example:
+
+```json
+{
+  "cert": {
+    "name": "bar",
+    "status_code": 200,
+    "response_time": 44,
+    "body": {
+      "status": "found",
+      "modif_time": "2022-07-11T16:12:03.674378878-05:00",
+      "size": 1234,
+      "since_modif": 678900
+    }
+  }
+}
+```
+
 ## API
 
  - `GET /status` - returns server status in JSON format
