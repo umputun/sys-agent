@@ -15,6 +15,7 @@ type FileProvider struct {
 }
 
 // Status returns the status of the file
+// url looks like this: file://blah/foo.txt (relative path) or file:///blah/foo.txt (absolute path)
 func (f *FileProvider) Status(req Request) (*Response, error) {
 	st := time.Now()
 
