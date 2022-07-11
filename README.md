@@ -245,7 +245,7 @@ This provider parses the nginx's response and returns the following:
 
 All the values are parsed directly from the response except `change_handled` which is a difference between two subsequent `handled` values.
 
-#### certificate provider
+#### `certificate` provider
 
 Checks if certificate expired or going to expire in the next 5 days.
 
@@ -271,7 +271,7 @@ Request examples:
 }
 ```
 
-#### file provider
+#### `file` provider
 
 Checks if file present and sets stats info
 
