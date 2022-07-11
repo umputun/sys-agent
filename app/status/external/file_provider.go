@@ -10,8 +10,7 @@ import (
 
 // FileProvider is a status provider that checks the status of a file.
 type FileProvider struct {
-	TimeOut     time.Duration
-	lastHandled int
+	TimeOut time.Duration
 }
 
 // Status returns the status of the file
@@ -41,11 +40,12 @@ func (f *FileProvider) Status(req Request) (*Response, error) {
 	body["modif_time"] = fi.ModTime().Format(time.RFC3339Nano)
 	body["since_modif"] = time.Since(fi.ModTime()).Milliseconds()
 
-	fh, err := os.Open(fname)
+	fh, err := os.Open(fname) //nolint:gosec // open file for reading, this is trusted file from the provider config
 	if err != nil {
 		return nil, fmt.Errorf("file open failed: %s %s: %w", req.Name, fname, err)
 	}
-	defer fh.Close()
+	defer fh.Close() //nolint:gosec // ro file
+
 	data := make([]byte, 100)
 	n, err := fh.Read(data)
 	if err != nil {
