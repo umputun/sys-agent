@@ -277,7 +277,7 @@ Checks if file present and sets stats info
 
 Request examples:
 - `foo:file://foo/bar.txt` - check if file with relative path exists and sets stats info
-- `bar:cert:///srv/foo/bar.txt` - check if file with absolute path exists and sets stats info
+- `bar:file:///srv/foo/bar.txt` - check if file with absolute path exists and sets stats info
 
 
 - Response example:
