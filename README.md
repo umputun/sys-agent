@@ -1,7 +1,7 @@
 # sys-agent [![build](https://github.com/umputun/sys-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/umputun/sys-agent/actions/workflows/ci.yml) [![Coverage Status](https://coveralls.io/repos/github/umputun/sys-agent/badge.svg?branch=master)](https://coveralls.io/github/umputun/sys-agent?branch=master)
 
 <div align="center">
-  <img class="logo" src="https://raw.githubusercontent.com/umputun/sys-agent/master/site/docs/logo.png" width="355px" height="142px" alt="SysAgent | Simple Status Reporting Server"/>
+  <img class="logo" src="https://raw.githubusercontent.com/umputun/sys-agent/master/site/docs/logo.png" width="500px" height="132px" alt="SysAgent | Simple Status Reporting Server"/>
 </div>
 
 SysAgent is a simple service reporting server status via HTTP GET request. It is useful for monitoring and debugging purposes, but usually used as a part of some other monitoring system collecting data and serving it. One of such systems is [gatus](https://github.com/TwiN/gatus), and it works fine with `sys-agent`.
