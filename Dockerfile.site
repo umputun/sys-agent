@@ -5,7 +5,7 @@ COPY site/ /build/
 COPY README.md /build/docs/index.md
 
 RUN \
-    sed -i 's|https://raw.githubusercontent.com/umputun/reproxy/master/site/docs/logo.png|logo.png|' /build/docs/index.md && \
+    sed -i 's|https://raw.githubusercontent.com/umputun/sys-agent/master/site/docs/logo.png|logo.png|' /build/docs/index.md && \
     sed -i 's|^.*/workflows/ci.yml.*$||' /build/docs/index.md
 RUN mkdocs build
 
