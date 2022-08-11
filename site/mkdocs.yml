@@ -1,0 +1,85 @@
+site_name: sys-agent
+site_url: https://sys-agent.umputun.dev/
+site_author: Umputun
+site_description: >-
+  System agent is a simple service reporting server status via HTTP GET request. It is useful for monitoring and
+  debugging purposes, but usually used as a part of some other monitoring system collecting data and serving it.
+
+repo_name: umputun/sys-agent
+repo_url: https://github.com/umputun/sys-agent
+copyright: Some rights reserved &copy; 2021 - 2022 Umputun
+
+theme:
+  name: material
+  favicon: favicon.png
+  language: en
+  palette:
+    - scheme: slate
+      media: "(prefers-color-scheme: dark)"
+      primary: green
+  features:
+    - navigation.instant
+    - toc.follow
+    - toc.integrate
+    - content.code.annotate
+    - navigation.sections
+  logo: favicon.png
+
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
+
+extra:
+  generator: true
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/umputun
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/r/umputun/sys-agent/
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/umputun
+
+markdown_extensions:
+  - smarty
+  - sane_lists
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - meta
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:materialx.emoji.twemoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+nav:
+  - SysAgent: index.md
