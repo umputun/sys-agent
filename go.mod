@@ -6,6 +6,7 @@ require (
 	github.com/didip/tollbooth/v6 v6.1.1
 	github.com/didip/tollbooth_chi v0.0.0-20200828173446-a7173453ea21
 	github.com/go-chi/chi/v5 v5.0.7
+	github.com/go-pkgz/fileutils v0.1.0
 	github.com/go-pkgz/lgr v0.10.4
 	github.com/go-pkgz/mongo/v2 v2.0.0
 	github.com/go-pkgz/rest v1.12.2

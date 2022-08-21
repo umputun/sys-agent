@@ -296,11 +296,15 @@ Request examples:
       "status": "found",
       "modif_time": "2022-07-11T16:12:03.674378878-05:00",
       "size": 1234,
-      "since_modif": 678900
+      "since_modif": 678900,
+      "size_change": 1234,
+      "modif_change": 200
     }
   }
 }
 ```
+
+In addition to the current file status this provider also keeps track of the difference between current and previous file size and modification time and sets the following values: `size_change` (in bytest) and `modif_change` (in milliseconds).
 
 ## API
 
