@@ -20,6 +20,9 @@ github.com/go-ole/go-ole/oleutil
 # github.com/go-pkgz/expirable-cache v0.0.3
 ## explicit; go 1.14
 github.com/go-pkgz/expirable-cache
+# github.com/go-pkgz/fileutils v0.1.0
+## explicit; go 1.14
+github.com/go-pkgz/fileutils
 # github.com/go-pkgz/lgr v0.10.4
 ## explicit; go 1.15
 github.com/go-pkgz/lgr
