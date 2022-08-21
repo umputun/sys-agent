@@ -66,7 +66,7 @@ Help Options:
 
 ## external services
 
-In addition to the basic checks `sys-agent` can report status of external services. Each service defined as name:url pair for supported protocols (`http`,`, `mongodb` and `docker`). Each servce will be reported as a separate element in the response and all responses have the similar structure: `name` (service name),  `status_code` (`200` or `4xx`) and `response_time` in milliseconds. The `body` includes the response details json, different for each service.
+In addition to the basic checks `sys-agent` can report status of external services. Each service defined as name:url pair for supported protocols (`http`, `mongodb`, `docker`, `file`, `nginx`, `cert` and `program` ). Each servce will be reported as a separate element in the response and all responses have the similar structure: `name` (service name),  `status_code` (`200` or `4xx`) and `response_time` in milliseconds. The `body` includes the response details json, different for each service.
 
 ### service providers (protocols)
 
