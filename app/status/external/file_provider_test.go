@@ -1,7 +1,6 @@
 package external
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -23,8 +22,8 @@ func TestFileProvider_Status(t *testing.T) {
 
 	time.Sleep(time.Millisecond * 101) // wait for file to be modified in 100ms
 	{
-		resp, err := p.Status(Request{Name: "r1", URL: "file://" + fname})
-		require.NoError(t, err)
+		resp, e := p.Status(Request{Name: "r1", URL: "file://" + fname})
+		require.NoError(t, e)
 		t.Logf("%+v", resp)
 		assert.Equal(t, "r1", resp.Name)
 		assert.Equal(t, 200, resp.StatusCode)
@@ -37,8 +36,8 @@ func TestFileProvider_Status(t *testing.T) {
 	}
 
 	{ // check size change, not changed
-		resp, err := p.Status(Request{Name: "r1", URL: "file://" + fname})
-		require.NoError(t, err)
+		resp, e := p.Status(Request{Name: "r1", URL: "file://" + fname})
+		require.NoError(t, e)
 		t.Logf("%+v", resp)
 		assert.Equal(t, "r1", resp.Name)
 		assert.Equal(t, 200, resp.StatusCode)
@@ -51,7 +50,7 @@ func TestFileProvider_Status(t *testing.T) {
 	}
 
 	{ // check size change,  changed
-		err = ioutil.WriteFile(fname, []byte("pong 1234567890"), 0644)
+		err = os.WriteFile(fname, []byte("pong 1234567890"), 0o644)
 		require.NoError(t, err)
 		resp, err := p.Status(Request{Name: "r1", URL: "file://" + fname})
 		require.NoError(t, err)
