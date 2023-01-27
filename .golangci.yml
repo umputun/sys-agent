@@ -42,11 +42,9 @@ linters:
     - gocyclo
     - dupl
     - misspell
-    - varcheck
-    - deadcode
+    - unused
     - typecheck
     - ineffassign
-    - varcheck
     - stylecheck
     - gochecknoinits
     - exportloopref
@@ -59,6 +57,9 @@ linters:
 
 issues:
   exclude-rules:
+    - text: "package-comments: should have a package comment"
+      linters:
+        - revive
     - text: "at least one file in a package should have a package comment"
       linters:
         - stylecheck

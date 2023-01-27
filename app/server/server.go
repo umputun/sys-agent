@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/didip/tollbooth/v6"
+	"github.com/didip/tollbooth/v7"
 	"github.com/didip/tollbooth_chi"
 	"github.com/go-chi/chi/v5"
 	log "github.com/go-pkgz/lgr"
