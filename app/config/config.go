@@ -14,7 +14,7 @@ import (
 type Parameters struct {
 	Volumes  []Volume `yaml:"volumes"`
 	Services struct {
-		Http        []Http        `yaml:"http"`
+		HTTP        []HTTP        `yaml:"http"`
 		Certificate []Certificate `yaml:"certificate"`
 		File        []File        `yaml:"file"`
 		Mongo       []Mongo       `yaml:"mongo"`
@@ -32,8 +32,8 @@ type Volume struct {
 	Path string `yaml:"path"`
 }
 
-// Http represents a http service to check
-type Http struct {
+// HTTP represents a http service to check
+type HTTP struct {
 	Name string `yaml:"name"`
 	URL  string `yaml:"url"`
 }
@@ -103,7 +103,7 @@ func (p *Parameters) MarshalVolumes() []string {
 func (p *Parameters) MarshalServices() []string {
 	res := []string{}
 
-	for _, v := range p.Services.Http {
+	for _, v := range p.Services.HTTP {
 		res = append(res, fmt.Sprintf("%s:%s", v.Name, v.URL))
 	}
 
