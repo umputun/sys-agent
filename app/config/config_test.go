@@ -26,9 +26,9 @@ func TestNew(t *testing.T) {
 			{Name: "docker2", URL: "tcp://192.168.1.1:4080", Containers: []string(nil)}}, p.Services.Docker)
 		assert.Equal(t, []File{{Name: "first", Path: "/tmp/example1.txt"}, {Name: "second", Path: "/tmp/example2.txt"}},
 			p.Services.File)
-		assert.Equal(t, []Http{{Name: "first", URL: "https://example1.com"}, {Name: "second", URL: "https://example2.com"}},
-			p.Services.Http)
-		assert.Equal(t, []Mongo{{Name: "dev", URL: "mongodb://example.com:27017", OplogMaxDelta: time.Duration(30 * time.Minute)}},
+		assert.Equal(t, []HTTP{{Name: "first", URL: "https://example1.com"}, {Name: "second", URL: "https://example2.com"}},
+			p.Services.HTTP)
+		assert.Equal(t, []Mongo{{Name: "dev", URL: "mongodb://example.com:27017", OplogMaxDelta: 30 * time.Minute}},
 			p.Services.Mongo)
 		assert.Equal(t, []Nginx{{Name: "nginx", StatusURL: "http://example.com:80"}}, p.Services.Nginx)
 	}
@@ -43,7 +43,7 @@ func TestParameters_MarshalVolumes(t *testing.T) {
 func TestParameters_String(t *testing.T) {
 	p, err := New("testdata/config.yml")
 	require.NoError(t, err)
-	exp := `config file: "testdata/config.yml", {Volumes:[{Name:root Path:/hostroot} {Name:data Path:/data}] Services:{Http:[{Name:first URL:https://example1.com} {Name:second URL:https://example2.com}] Certificate:[{Name:prim_cert URL:https://example1.com} {Name:second_cert URL:https://example2.com}] File:[{Name:first Path:/tmp/example1.txt} {Name:second Path:/tmp/example2.txt}] Mongo:[{Name:dev URL:mongodb://example.com:27017 OplogMaxDelta:30m0s}] Nginx:[{Name:nginx StatusURL:http://example.com:80}] Program:[{Name:first Path:/usr/bin/example1 Args:[arg1 arg2]} {Name:second Path:/usr/bin/example2 Args:[]}] Docker:[{Name:docker1 URL:unix:///var/run/docker.sock Containers:[reproxy mattermost postgres]} {Name:docker2 URL:tcp://192.168.1.1:4080 Containers:[]}]} fileName:testdata/config.yml}`
+	exp := `config file: "testdata/config.yml", {Volumes:[{Name:root Path:/hostroot} {Name:data Path:/data}] Services:{HTTP:[{Name:first URL:https://example1.com} {Name:second URL:https://example2.com}] Certificate:[{Name:prim_cert URL:https://example1.com} {Name:second_cert URL:https://example2.com}] File:[{Name:first Path:/tmp/example1.txt} {Name:second Path:/tmp/example2.txt}] Mongo:[{Name:dev URL:mongodb://example.com:27017 OplogMaxDelta:30m0s}] Nginx:[{Name:nginx StatusURL:http://example.com:80}] Program:[{Name:first Path:/usr/bin/example1 Args:[arg1 arg2]} {Name:second Path:/usr/bin/example2 Args:[]}] Docker:[{Name:docker1 URL:unix:///var/run/docker.sock Containers:[reproxy mattermost postgres]} {Name:docker2 URL:tcp://192.168.1.1:4080 Containers:[]}]} fileName:testdata/config.yml}`
 	assert.Equal(t, exp, p.String())
 }
 

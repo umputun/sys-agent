@@ -128,7 +128,7 @@ func Test_services(t *testing.T) {
 		{
 			[]string{"s1", "s2", "s3"}, func() *config.Parameters {
 				res := &config.Parameters{}
-				res.Services.Http = []config.Http{{Name: "n1", URL: "http://example.com"}}
+				res.Services.HTTP = []config.HTTP{{Name: "n1", URL: "http://example.com"}}
 				return res
 			},
 			[]string{"s1", "s2", "s3", "n1:http://example.com"},
@@ -137,7 +137,7 @@ func Test_services(t *testing.T) {
 		{
 			[]string{}, func() *config.Parameters {
 				res := &config.Parameters{}
-				res.Services.Http = []config.Http{{Name: "n1", URL: "http://example.com"}}
+				res.Services.HTTP = []config.HTTP{{Name: "n1", URL: "http://example.com"}}
 				return res
 			},
 			[]string{"n1:http://example.com"},
