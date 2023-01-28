@@ -22,6 +22,8 @@ type MongoProvider struct {
 }
 
 // Status returns status of mongo, checks if connection established and ping is ok
+// request URL looks like mongo:mongodb://172.17.42.1:27017/test?oplogMaxDelta=30m
+// oplogMaxDelta is optional, if set, checks if oplog is not too far behind
 func (m *MongoProvider) Status(req Request) (*Response, error) {
 	st := time.Now()
 	ctx, cancel := context.WithTimeout(context.Background(), m.TimeOut)

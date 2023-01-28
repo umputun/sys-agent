@@ -15,10 +15,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/umputun/sys-agent/app/config"
 	"github.com/umputun/sys-agent/app/status"
 )
 
-func Test_parseVolumes(t *testing.T) {
+func Test_parseVolumes_ArgsOnly(t *testing.T) {
 
 	tbl := []struct {
 		inp  []string
@@ -33,7 +34,7 @@ func Test_parseVolumes(t *testing.T) {
 
 	for i, tt := range tbl {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			vols, err := parseVolumes(tt.inp)
+			vols, err := parseVolumes(tt.inp, nil)
 			if tt.err != nil {
 				require.EqualError(t, err, tt.err.Error())
 				return
@@ -41,6 +42,22 @@ func Test_parseVolumes(t *testing.T) {
 			assert.Equal(t, tt.vols, vols)
 		})
 	}
+}
+
+func Test_parseVolumes_ConfigOnly(t *testing.T) {
+	conf, err := config.New("config/testdata/config.yml")
+	require.NoError(t, err)
+	vols, err := parseVolumes(nil, conf)
+	require.NoError(t, err)
+	assert.Equal(t, []status.Volume{{Name: "root", Path: "/hostroot"}, {Name: "data", Path: "/data"}}, vols)
+}
+
+func Test_parseVolumes_ArgsAndConfig(t *testing.T) {
+	conf, err := config.New("config/testdata/config.yml")
+	require.NoError(t, err)
+	vols, err := parseVolumes([]string{"data volume:/data", "blah:/"}, conf)
+	require.NoError(t, err)
+	assert.Equal(t, []status.Volume{{Name: "data volume", Path: "/data"}, {Name: "blah", Path: "/"}}, vols)
 }
 
 func Test_main(t *testing.T) {
@@ -96,5 +113,41 @@ func waitForHTTPServerStart(port int) {
 			_ = resp.Body.Close()
 			return
 		}
+	}
+}
+
+func Test_services(t *testing.T) {
+	tbl := []struct {
+		cli []string
+		cfg func() *config.Parameters
+		res []string
+	}{
+		{[]string{"echo:https://echo.umputun.com"}, func() *config.Parameters { return nil },
+			[]string{"echo:https://echo.umputun.com"}},
+
+		{
+			[]string{"s1", "s2", "s3"}, func() *config.Parameters {
+				res := &config.Parameters{}
+				res.Services.Http = []config.Http{{Name: "n1", URL: "http://example.com"}}
+				return res
+			},
+			[]string{"s1", "s2", "s3", "n1:http://example.com"},
+		},
+
+		{
+			[]string{}, func() *config.Parameters {
+				res := &config.Parameters{}
+				res.Services.Http = []config.Http{{Name: "n1", URL: "http://example.com"}}
+				return res
+			},
+			[]string{"n1:http://example.com"},
+		},
+	}
+
+	for i, tt := range tbl {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			res := services(tt.cli, tt.cfg())
+			assert.Equal(t, tt.res, res)
+		})
 	}
 }
