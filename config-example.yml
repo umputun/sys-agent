@@ -1,0 +1,11 @@
+volumes:
+  - {name: root, path: /hostroot}
+  - {name: data, path: /data}
+
+services:
+  certificate:
+    - {name: rt_cert, url: https://radio-t.com}
+    - {name: ump_cert, url: https://umputun.com}
+  http:
+    - {name: news_ping, url: https://news.radio-t.com/api/ping}
+    - {name: site_ping, url: https://radio-t.com/site-api/ping}
