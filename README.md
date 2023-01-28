@@ -19,6 +19,7 @@ The idea of external services is to be able to integrate status of all related s
 
 ```
 Application Options:
+  -f, --config=      config file [$CONFIG]
   -l, --listen= listen on host:port (default: localhost:8080) [$LISTEN]
   -v, --volume= volumes to report (default: root:/) [$VOLUMES]
   -s, --service= services to report [$SERVICES]  
@@ -36,6 +37,40 @@ Help Options:
 * services (`--service`, can be repeated) is a list of name:url pairs, where name is a name of the service, and url is a url to the service. Supports `http`, `https`, `mongodb` and `docker` schemes. The response for each service will be in `services` field.
 * concurrency (`--concurrency`) is a number of concurrent requests to services.
 * timeout (`--timeout`) is a timeout for each request to services.
+* config file (`--config`, `-f`) is a path to the config file, see below for details.
+
+## configuration file 
+
+`sys-agent` can be configured with a yaml file as well. The file should contain a list of volumes and services. The file can be specified via `--config` or `-f` options or `CONFIG` environment variable. 
+
+```yml
+volumes:
+  - {name: root, path: /hostroot}
+  - {name: data, path: /data}
+
+services:
+  mongo:
+    - {name: dev, url: mongodb://example.com:27017, oplog_max_delta: 30m}
+  certificate:
+    - {name: prim_cert, url: https://example1.com}
+    - {name: second_cert, url: https://example2.com}
+  docker:
+    - {name: docker1, url: unix:///var/run/docker.sock, containers: [reproxy, mattermost, postgres]}
+    - {name: docker2, url: tcp://192.168.1.1:4080}
+  file:
+    - {name: first, path: /tmp/example1.txt}
+    - {name: second, path: /tmp/example2.txt}
+  http:
+    - {name: first, url: https://example1.com}
+    - {name: second, url: https://example2.com}
+  program:
+    - {name: first, path: /usr/bin/example1, args: [arg1, arg2]}
+    - {name: second, path: /usr/bin/example2}
+  nginx:
+    - {name: nginx, status_url: http://example.com:80}
+```
+
+The config file has the same structure as command line options. `sys-agent` converts the config file to command line options and then parses them as usual. 
 
 ## basic checks
 
