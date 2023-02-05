@@ -11,10 +11,11 @@ require (
 	github.com/go-pkgz/mongo/v2 v2.0.0
 	github.com/go-pkgz/rest v1.17.0
 	github.com/go-pkgz/syncs v1.2.0
-	github.com/shirou/gopsutil/v3 v3.22.12
+	github.com/shirou/gopsutil/v3 v3.23.1
 	github.com/stretchr/testify v1.8.1
 	github.com/umputun/go-flags v1.5.1
 	go.mongodb.org/mongo-driver v1.11.1
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -39,5 +40,4 @@ require (
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/text v0.6.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
