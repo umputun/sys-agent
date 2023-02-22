@@ -50,7 +50,11 @@ func (d *DockerProvider) Status(req Request) (*Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("docker request failed: %s %s: %w", req.Name, req.URL, err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if e := resp.Body.Close(); e != nil {
+			log.Printf("[WARN] docker response close failed: %s %s: %s", req.Name, req.URL, e)
+		}
+	}()
 
 	var required []string
 	if uu.Query().Get("containers") != "" {
