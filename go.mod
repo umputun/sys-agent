@@ -1,20 +1,20 @@
 module github.com/umputun/sys-agent
 
-go 1.19
+go 1.20
 
 require (
 	github.com/didip/tollbooth/v7 v7.0.1
 	github.com/didip/tollbooth_chi v0.0.0-20220719025231-d662a7f6928f
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-pkgz/fileutils v0.1.0
-	github.com/go-pkgz/lgr v0.10.4
-	github.com/go-pkgz/mongo/v2 v2.0.0
+	github.com/go-pkgz/lgr v0.11.0
+	github.com/go-pkgz/mongo/v2 v2.1.0
 	github.com/go-pkgz/rest v1.17.0
 	github.com/go-pkgz/syncs v1.2.0
 	github.com/shirou/gopsutil/v3 v3.23.1
 	github.com/stretchr/testify v1.8.1
 	github.com/umputun/go-flags v1.5.1
-	go.mongodb.org/mongo-driver v1.11.1
+	go.mongodb.org/mongo-driver v1.11.2
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -36,8 +36,8 @@ require (
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
-	golang.org/x/crypto v0.5.0 // indirect
+	golang.org/x/crypto v0.6.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.4.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 )
