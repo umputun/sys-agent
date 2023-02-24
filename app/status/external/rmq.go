@@ -28,7 +28,7 @@ func (h *RMQProvider) Status(req Request) (*Response, error) {
 		Messages         int `json:"messages"`
 		MessagesReady    int `json:"messages_ready"`
 		MessagesUnack    int `json:"messages_unacknowledged"`
-		MessagesReadyRam int `json:"messages_ready_ram"`
+		MessagesReadyRAM int `json:"messages_ready_ram"`
 		MessagesDetails  struct {
 			Rate float64 `json:"rate"`
 		} `json:"messages_details"`
@@ -68,7 +68,7 @@ func (h *RMQProvider) Status(req Request) (*Response, error) {
 	body["messages"] = rec.Messages
 	body["messages_ready"] = rec.MessagesReady
 	body["messages_unacknowledged"] = rec.MessagesUnack
-	body["messages_ready_ram"] = rec.MessagesReadyRam
+	body["messages_ready_ram"] = rec.MessagesReadyRAM
 	body["messages_rate"] = rec.MessagesDetails.Rate
 	body["avg_ingress_rate"] = rec.BackingQueueStatus.AvgIngressRate
 	body["avg_egress_rate"] = rec.BackingQueueStatus.AvgEgressRate
