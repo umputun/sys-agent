@@ -68,6 +68,8 @@ services:
     - {name: second, path: /usr/bin/example2}
   nginx:
     - {name: nginx, status_url: http://example.com:80}
+  rmq:
+    - {name: rmqtest, url: http://example.com:15672, vhost: v1, queue: q1, user: guest, pass: passwd}
 ```
 
 The config file has the same structure as command line options. `sys-agent` converts the config file to command line options and then parses them as usual. 
@@ -340,6 +342,44 @@ Request examples:
 ```
 
 In addition to the current file status this provider also keeps track of the difference between current and previous file size and modification time and sets the following values: `size_change` (in bytest) and `modif_change` (in milliseconds).
+
+#### `rmq` provider
+
+Gets stats from RabbitMQ management API.
+
+Request examples:
+- `foo:rmq://user:passwd@example.com:1234/foo/vhost1/queue1` - returns stats for queue1 in vhost1
+
+
+- Response example:
+
+```json
+{
+  "rmq": {
+    "name": "rmq-test",
+    "status_code": 200,
+    "response_time": 12,
+    "body": {
+      "avg_egress_rate":15.5,
+      "avg_ingress_rate":19.9,
+      "consumers":4,
+      "messages":56178,
+      "messages_delta":578,
+      "messages_rate":11.06,
+      "messages_ready":56178,
+      "messages_ready_ram":3771,
+      "messages_unacknowledged":0,
+      "name": "notification.queue",
+      "publish":13847734,
+      "publish_rate":0,
+      "state":"running",
+      "vhost":"feeds"
+    }
+  }
+}
+```
+
+In addition to the current status this provider also keeps track of the difference between current and previous number of messages in `messages_delta`.
 
 ## API
 

@@ -88,6 +88,7 @@ func main() {
 		Nginx:       &external.NginxProvider{TimeOut: opts.TimeOut},
 		Certificate: &external.CertificateProvider{TimeOut: opts.TimeOut},
 		File:        &external.FileProvider{TimeOut: opts.TimeOut},
+		RMQ:         &external.RMQProvider{TimeOut: opts.TimeOut},
 	}
 
 	srv := server.Rest{
