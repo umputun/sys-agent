@@ -21,6 +21,7 @@ type Parameters struct {
 		Nginx       []Nginx       `yaml:"nginx"`
 		Program     []Program     `yaml:"program"`
 		Docker      []Docker      `yaml:"docker"`
+		RMQ         []RMQ         `yaml:"rmq"`
 	} `yaml:"services"`
 
 	fileName string `yaml:"-"`
@@ -75,6 +76,16 @@ type Program struct {
 	Name string   `yaml:"name"`
 	Path string   `yaml:"path"`
 	Args []string `yaml:"args"`
+}
+
+// RMQ represents a rmq to check
+type RMQ struct {
+	Name  string `yaml:"name"`
+	URL   string `yaml:"url"`
+	User  string `yaml:"user"`
+	Pass  string `yaml:"pass"`
+	Vhost string `yaml:"vhost"`
+	Queue string `yaml:"queue"`
 }
 
 // New creates a new Parameters from the given file
@@ -150,6 +161,17 @@ func (p *Parameters) MarshalServices() []string {
 			prg += "?args=\"" + strings.Join(v.Args, " ") + "\""
 		}
 		res = append(res, prg)
+	}
+
+	for _, v := range p.Services.RMQ {
+		u := v.URL
+		u = strings.TrimPrefix(u, "http://")
+		u = strings.TrimPrefix(u, "https://")
+		if v.User != "" && v.Pass != "" {
+			u = fmt.Sprintf("%s:%s@%s", v.User, v.Pass, u)
+
+		}
+		res = append(res, fmt.Sprintf("%s:rmq://%s/%s/%s", v.Name, u, v.Vhost, v.Queue))
 	}
 
 	return res

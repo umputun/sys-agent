@@ -1,0 +1,98 @@
+{
+  "arguments": {
+    "x-message-ttl": 86400000
+  },
+  "auto_delete": false,
+  "backing_queue_status": {
+    "avg_ack_egress_rate": 0.0,
+    "avg_ack_ingress_rate": 0.0,
+    "avg_egress_rate": 15.5,
+    "avg_ingress_rate": 19.9,
+    "delta": [
+      "delta",
+      13795328,
+      52407,
+      0,
+      13847735
+    ],
+    "len": 56178,
+    "mirror_seen": 0,
+    "mirror_senders": 2,
+    "mode": "default",
+    "next_seq_id": 13847735,
+    "q1": 0,
+    "q2": 0,
+    "q3": 3771,
+    "q4": 0,
+    "target_ram_count": 0
+  },
+  "consumer_details": [],
+  "consumer_utilisation": null,
+  "consumers": 4,
+  "deliveries": [],
+  "durable": true,
+  "effective_policy_definition": {
+    "ha-mode": "all",
+    "ha-sync-mode": "automatic"
+  },
+  "exclusive": false,
+  "exclusive_consumer_tag": null,
+  "garbage_collection": {
+    "fullsweep_after": 65535,
+    "max_heap_size": 0,
+    "min_bin_vheap_size": 46422,
+    "min_heap_size": 233,
+    "minor_gcs": 12
+  },
+  "head_message_timestamp": null,
+  "incoming": [],
+  "memory": 4721256,
+  "message_bytes": 12908011,
+  "message_bytes_paged_out": 0,
+  "message_bytes_persistent": 12908011,
+  "message_bytes_ram": 881433,
+  "message_bytes_ready": 12908011,
+  "message_bytes_unacknowledged": 0,
+  "message_stats": {
+    "publish": 13847734,
+    "publish_details": {
+      "rate": 0.0
+    }
+  },
+  "messages": 56178,
+  "messages_details": {
+    "rate": 11.06
+  },
+  "messages_paged_out": 0,
+  "messages_persistent": 56178,
+  "messages_ram": 3771,
+  "messages_ready": 56178,
+  "messages_ready_details": {
+    "rate": 17.1
+  },
+  "messages_ready_ram": 3771,
+  "messages_unacknowledged": 0,
+  "messages_unacknowledged_details": {
+    "rate": 12.05
+  },
+  "messages_unacknowledged_ram": 0,
+  "name": "notification.queue",
+  "node": "rabbit@rmq2",
+  "operator_policy": null,
+  "policy": "ha-all",
+  "recoverable_slaves": [
+    "rabbit@rmq1"
+  ],
+  "reductions": 62820315280,
+  "reductions_details": {
+    "rate": 226.4
+  },
+  "slave_nodes": [
+    "rabbit@rmq1"
+  ],
+  "state": "running",
+  "synchronised_slave_nodes": [
+    "rabbit@rmq1"
+  ],
+  "vhost": "feeds"
+}
