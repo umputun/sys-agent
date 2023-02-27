@@ -61,7 +61,7 @@ func TestRMQ_Status(t *testing.T) {
 
 func TestRMQ_StatusFailed(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, "/queues/feeds/notification.queue", r.URL.Path)
+		require.Equal(t, "/api/queues/feeds/notification.queue", r.URL.Path)
 		w.WriteHeader(http.StatusInternalServerError)
 	}))
 	defer ts.Close()
