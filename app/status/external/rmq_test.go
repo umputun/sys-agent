@@ -14,7 +14,7 @@ import (
 
 func TestRMQ_Status(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, "/queues/feeds/notification.queue", r.URL.Path)
+		require.Equal(t, "/api/queues/feeds/notification.queue", r.URL.Path)
 		time.Sleep(100 * time.Millisecond)
 		w.WriteHeader(http.StatusOK)
 		body, err := os.ReadFile("testdata/rmq.json")

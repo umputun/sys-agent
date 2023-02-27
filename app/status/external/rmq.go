@@ -45,9 +45,11 @@ func (h *RMQProvider) Status(req Request) (*Response, error) {
 	st := time.Now()
 	client := http.Client{Timeout: h.TimeOut}
 	u := strings.Replace(req.URL, "rmq://", "https://", 1)
+	u = strings.Replace(u, "/queues/", "/api/queues/", 1)
 	resp, err := client.Get(u)
 	if err != nil {
 		u = strings.Replace(req.URL, "rmq://", "http://", 1)
+		u = strings.Replace(u, "/queues/", "/api/queues/", 1)
 		resp, err = client.Get(u)
 		if err != nil {
 			return nil, fmt.Errorf("both https and http failed for %s: %w", req.URL, err)
