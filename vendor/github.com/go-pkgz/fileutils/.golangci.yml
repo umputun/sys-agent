@@ -30,23 +30,19 @@ linters:
   disable-all: true
   enable:
     - megacheck
-    - golint
+    - revive
     - govet
     - unconvert
     - megacheck
-    - structcheck
+    - unused
     - gas
     - gocyclo
     - misspell
     - unparam
-    - varcheck
-    - deadcode
     - typecheck
     - ineffassign
-    - varcheck
     - stylecheck
     - gochecknoinits
-    - golint
     - nakedret
     - gosimple
     - prealloc
@@ -66,6 +62,3 @@ issues:
       linters:
         - gosec
   exclude-use-default: false
-
-service:
-  golangci-lint-version: 1.26.x
