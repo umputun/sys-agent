@@ -130,7 +130,7 @@ func (p *Parameters) MarshalServices() []string {
 		url = strings.TrimPrefix(url, "tcp://")
 		url = strings.TrimPrefix(url, "unix://")
 		if len(v.Containers) > 0 {
-			url += "?containers=" + strings.Join(v.Containers, ",")
+			url += "?containers=" + strings.Join(v.Containers, ":")
 		}
 		res = append(res, fmt.Sprintf("%s:docker://%s", v.Name, url))
 	}

@@ -19,10 +19,10 @@ jobs:
 
     steps:
 
-      - name: set up go 1.20
-        uses: actions/setup-go@v3
+      - name: set up go 1.21
+        uses: actions/setup-go@v4
         with:
-          go-version: "1.20"
+          go-version: "1.21"
         id: go
 
       - name: checkout
@@ -43,13 +43,10 @@ jobs:
         with:
           version: latest
 
-      - name: install goveralls
-        run: |
-          curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $GITHUB_WORKSPACE v1.45.0
-          GO111MODULE=off go get -u -v github.com/mattn/goveralls
-
       - name: submit coverage
-        run: $(go env GOPATH)/bin/goveralls -service="github" -coverprofile=$GITHUB_WORKSPACE/profile.cov
+        run: |
+          go install github.com/mattn/goveralls@latest
+          goveralls -service="github" -coverprofile=$GITHUB_WORKSPACE/profile.cov
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
