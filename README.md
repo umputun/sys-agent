@@ -67,7 +67,7 @@ services:
     - {name: first, path: /usr/bin/example1, args: [arg1, arg2]}
     - {name: second, path: /usr/bin/example2}
   nginx:
-    - {name: nginx, status_url: http://example.com:80}
+    - {name: nginx, status_url: nginx://example.com:80}
   rmq:
     - {name: rmqtest, url: http://example.com:15672, vhost: v1, queue: q1, user: guest, pass: passwd}
 ```

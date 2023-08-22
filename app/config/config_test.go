@@ -30,7 +30,7 @@ func TestNew(t *testing.T) {
 			p.Services.HTTP)
 		assert.Equal(t, []Mongo{{Name: "dev", URL: "mongodb://example.com:27017", OplogMaxDelta: 30 * time.Minute}},
 			p.Services.Mongo)
-		assert.Equal(t, []Nginx{{Name: "nginx", StatusURL: "http://example.com:80"}}, p.Services.Nginx)
+		assert.Equal(t, []Nginx{{Name: "nginx", StatusURL: "nginx://example.com:80"}}, p.Services.Nginx)
 		assert.Equal(t, []RMQ{{Name: "rmqtest", URL: "http://example.com:15672", User: "guest", Pass: "passwd",
 			Vhost: "v1", Queue: "q1"}}, p.Services.RMQ)
 	}
@@ -45,7 +45,7 @@ func TestParameters_MarshalVolumes(t *testing.T) {
 func TestParameters_String(t *testing.T) {
 	p, err := New("testdata/config.yml")
 	require.NoError(t, err)
-	exp := `config file: "testdata/config.yml", {Volumes:[{Name:root Path:/hostroot} {Name:data Path:/data}] Services:{HTTP:[{Name:first URL:https://example1.com} {Name:second URL:https://example2.com}] Certificate:[{Name:prim_cert URL:https://example1.com} {Name:second_cert URL:https://example2.com}] File:[{Name:first Path:/tmp/example1.txt} {Name:second Path:/tmp/example2.txt}] Mongo:[{Name:dev URL:mongodb://example.com:27017 OplogMaxDelta:30m0s}] Nginx:[{Name:nginx StatusURL:http://example.com:80}] Program:[{Name:first Path:/usr/bin/example1 Args:[arg1 arg2]} {Name:second Path:/usr/bin/example2 Args:[]}] Docker:[{Name:docker1 URL:unix:///var/run/docker.sock Containers:[reproxy mattermost postgres]} {Name:docker2 URL:tcp://192.168.1.1:4080 Containers:[]}] RMQ:[{Name:rmqtest URL:http://example.com:15672 User:guest Pass:passwd Vhost:v1 Queue:q1}]} fileName:testdata/config.yml}`
+	exp := `config file: "testdata/config.yml", {Volumes:[{Name:root Path:/hostroot} {Name:data Path:/data}] Services:{HTTP:[{Name:first URL:https://example1.com} {Name:second URL:https://example2.com}] Certificate:[{Name:prim_cert URL:https://example1.com} {Name:second_cert URL:https://example2.com}] File:[{Name:first Path:/tmp/example1.txt} {Name:second Path:/tmp/example2.txt}] Mongo:[{Name:dev URL:mongodb://example.com:27017 OplogMaxDelta:30m0s}] Nginx:[{Name:nginx StatusURL:nginx://example.com:80}] Program:[{Name:first Path:/usr/bin/example1 Args:[arg1 arg2]} {Name:second Path:/usr/bin/example2 Args:[]}] Docker:[{Name:docker1 URL:unix:///var/run/docker.sock Containers:[reproxy mattermost postgres]} {Name:docker2 URL:tcp://192.168.1.1:4080 Containers:[]}] RMQ:[{Name:rmqtest URL:http://example.com:15672 User:guest Pass:passwd Vhost:v1 Queue:q1}]} fileName:testdata/config.yml}`
 	assert.Equal(t, exp, p.String())
 }
 
@@ -59,7 +59,7 @@ func TestParameters_MarshalServices(t *testing.T) {
 			"docker1:docker:///var/run/docker.sock?containers=reproxy:mattermost:postgres", "docker2:docker://192.168.1.1:4080",
 			"first:file:///tmp/example1.txt", "second:file:///tmp/example2.txt",
 			"dev:mongodb://example.com:27017?oplogMaxDelta=30m0s",
-			"nginx:nginx:http://example.com:80",
+			"nginx:nginx://example.com:80",
 			"first:program:///usr/bin/example1?args=\"arg1 arg2\"", "second:program:///usr/bin/example2",
 			"rmqtest:rmq://guest:passwd@example.com:15672/v1/q1",
 		}
