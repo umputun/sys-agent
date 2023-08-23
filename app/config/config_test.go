@@ -59,7 +59,7 @@ func TestParameters_MarshalServices(t *testing.T) {
 			"docker1:docker:///var/run/docker.sock?containers=reproxy:mattermost:postgres", "docker2:docker://192.168.1.1:4080",
 			"first:file:///tmp/example1.txt", "second:file:///tmp/example2.txt",
 			"dev:mongodb://example.com:27017?oplogMaxDelta=30m0s",
-			"nginx:nginx:http://example.com:80",
+			"nginx:nginx://example.com:80",
 			"first:program:///usr/bin/example1?args=\"arg1 arg2\"", "second:program:///usr/bin/example2",
 			"rmqtest:rmq://guest:passwd@example.com:15672/v1/q1",
 		}

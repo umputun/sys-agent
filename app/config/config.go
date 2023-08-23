@@ -152,7 +152,11 @@ func (p *Parameters) MarshalServices() []string {
 	}
 
 	for _, v := range p.Services.Nginx {
-		res = append(res, fmt.Sprintf("%s:nginx:%s", v.Name, v.StatusURL))
+		u := v.StatusURL
+		u = strings.TrimPrefix(u, "http://")
+		u = strings.TrimPrefix(u, "https://")
+
+		res = append(res, fmt.Sprintf("%s:nginx://%s", v.Name, u))
 	}
 
 	for _, v := range p.Services.Program {
