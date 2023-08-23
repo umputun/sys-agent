@@ -1,18 +1,26 @@
-B=$(shell git rev-parse --abbrev-ref HEAD)
-BRANCH=$(subst /,-,$(B))
-GITREV=$(shell git describe --abbrev=7 --always --tags)
-REV=$(GITREV)-$(BRANCH)-$(shell date +%Y%m%d-%H:%M:%S)
+TAG=$(shell git describe --tags --abbrev=0 --exact-match 2>/dev/null)
+BRANCH=$(if $(TAG),$(TAG),$(shell git rev-parse --abbrev-ref HEAD 2>/dev/null))
+HASH=$(shell git rev-parse --short=7 HEAD 2>/dev/null)
+TIMESTAMP=$(shell git log -1 --format=%ct HEAD 2>/dev/null | xargs -I{} date -u -r {} +%Y%m%dT%H%M%S)
+GIT_REV=$(shell printf "%s-%s-%s" "$(BRANCH)" "$(HASH)" "$(TIMESTAMP)")
+REV=$(if $(filter --,$(GIT_REV)),latest,$(GIT_REV)) # fallback to latest if not in git repo
 
 docker:
 	docker build -t umputun/sys-agent:master --progress=plain .
 
-dist:
-	- @mkdir -p dist
-	docker build -f Dockerfile.artifacts --progress=plain -t sys-agent.bin .
-	- @docker rm -f sys-agent.bin 2>/dev/null || exit 0
-	docker run -d --name=sys-agent.bin sys-agent.bin
-	docker cp sys-agent.bin:/artifacts dist/
-	docker rm -f sys-agent.bin
+release:
+	@echo release to .bin
+	goreleaser --snapshot --skip-publish --clean
+	ls -l .bin
+
+site:
+	@rm -f  site/public/*
+	@docker rm -f sys-agent-site
+	docker build -f Dockerfile.site --progress=plain -t sys-agent.site .
+	docker run -d --name=sys-agent-site sys-agent.site
+	sleep 3
+	docker cp "sys-agent-site":/srv/site/ site/public
+	docker rm -f sys-agent-site
 
 race_test:
 	cd app && go test -race -mod=vendor -timeout=60s -count 1 ./...
@@ -23,4 +31,4 @@ build: info
 info:
 	- @echo "revision $(REV)"
 
-.PHONY: dist docker race_test bin info build_site
+.PHONY: dist docker race_test bin info site
