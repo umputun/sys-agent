@@ -26,7 +26,7 @@ builds:
     ldflags: "-s -w -X main.revision={{.Tag}}-{{.ShortCommit}}-{{.CommitDate}}"
 
 archives:
-  - id: spot
+  - id: sys-agent
     name_template: >-
       {{.ProjectName}}_
       {{- .Tag}}_
