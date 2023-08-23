@@ -12,6 +12,12 @@ All the configuration is done via a few command line options/environment variabl
 
 The idea of external services is to be able to integrate status of all related services into a single response. This way a singe json response can report instance metrics as well as status of http health check, status of running containers, etc.
 
+## installation
+
+- install binary from [releases](https://github.com/umputun/sys-agent/releases/). It has amd64, arm64 and armv7 builds for deb, rpm and apk packages as well as for tar.gz archive.
+- it also has brew package for macos: `brew install sys-agent`.
+- for docker use `umputun/sys-agent:latest` or `ghcr.io/umputun/sys-agent:latest` image. It is a multi-arch image with amd64 and arm64 builds.
+
 ## usage
 
 `$ sys-agent -l :8080 -v "root:/" -v "data:/mnt/data"`
@@ -31,6 +37,7 @@ Help Options:
   -h, --help    Show this help message
 
 ```
+
 ### parameters details
 
 * volumes (`--volume`, can be repeated) is a list of name:path pairs, where name is a name of the volume, and path is a path to the volume.
