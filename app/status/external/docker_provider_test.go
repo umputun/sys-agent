@@ -17,7 +17,7 @@ func TestDockerProvider_Status(t *testing.T) {
 	ts := httptest.NewServer(
 		http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-				require.Equal(t, "/v1.22/containers/json", r.URL.Path)
+				require.Equal(t, "/v1.24/containers/json", r.URL.Path)
 				time.Sleep(time.Millisecond * 10)
 				w.WriteHeader(http.StatusOK)
 				data, err := os.ReadFile("testdata/containers.json")
@@ -40,7 +40,7 @@ func TestDockerProvider_StatusWithRequired(t *testing.T) {
 	ts := httptest.NewServer(
 		http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-				require.Equal(t, "/v1.22/containers/json", r.URL.Path)
+				require.Equal(t, "/v1.24/containers/json", r.URL.Path)
 				time.Sleep(time.Millisecond * 10)
 				w.WriteHeader(http.StatusOK)
 				data, err := os.ReadFile("testdata/containers.json")
