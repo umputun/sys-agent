@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+const dockerClientVersion = "1.24"
+
 // DockerProvider is a status provider that uses docker
 type DockerProvider struct {
 	TimeOut time.Duration
@@ -46,7 +48,8 @@ func (d *DockerProvider) Status(req Request) (*Response, error) {
 		Timeout: d.TimeOut,
 	}
 
-	resp, err := client.Get("http://localhost/v1.24/containers/json")
+	dkURL := fmt.Sprintf("http://localhost/v%s/containers/json", dockerClientVersion)
+	resp, err := client.Get(dkURL)
 	if err != nil {
 		return nil, fmt.Errorf("docker request failed: %s %s: %w", req.Name, req.URL, err)
 	}
