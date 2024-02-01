@@ -46,7 +46,7 @@ func (d *DockerProvider) Status(req Request) (*Response, error) {
 		Timeout: d.TimeOut,
 	}
 
-	resp, err := client.Get("http://localhost/v1.22/containers/json")
+	resp, err := client.Get("http://localhost/v1.24/containers/json")
 	if err != nil {
 		return nil, fmt.Errorf("docker request failed: %s %s: %w", req.Name, req.URL, err)
 	}
