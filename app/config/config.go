@@ -63,6 +63,9 @@ type Mongo struct {
 	Name          string        `yaml:"name"`
 	URL           string        `yaml:"url"`
 	OplogMaxDelta time.Duration `yaml:"oplog_max_delta"`
+	Collection    string        `yaml:"collection"`
+	DB            string        `yaml:"db"`
+	CountQuery    string        `yaml:"count_query"`
 }
 
 // Nginx represents a nginx service to check
@@ -147,6 +150,15 @@ func (p *Parameters) MarshalServices() []string {
 			} else {
 				m += fmt.Sprintf("?oplogMaxDelta=%v", v.OplogMaxDelta)
 			}
+		}
+		if v.Collection != "" {
+			m += fmt.Sprintf("&collection=%s", v.Collection)
+		}
+		if v.DB != "" {
+			m += fmt.Sprintf("&db=%s", v.DB)
+		}
+		if v.CountQuery != "" {
+			m += fmt.Sprintf("&countQuery=%s", v.CountQuery)
 		}
 		res = append(res, m)
 	}
