@@ -61,7 +61,7 @@ func Test_parseVolumes_ArgsAndConfig(t *testing.T) {
 }
 
 func Test_main(t *testing.T) {
-	port := 40000 + int(rand.Int31n(1000))
+	port := 40000 + int(rand.Int31n(1000)) //nolint:gosec
 	os.Args = []string{"app", "--listen=127.0.0.1:" + strconv.Itoa(port), "-v root:/", "-s echo:https://echo.umputun.com", "--dbg"}
 
 	done := make(chan struct{})

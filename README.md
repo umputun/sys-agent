@@ -178,6 +178,10 @@ Response example:
 
 The rest of details is a subset of the [replica status](https://docs.mongodb.com/manual/reference/command/replSetGetStatus/)
 
+In addition, `mongodb` can also check count of documents in a collection for a given query. In this case it adds `count` field to the response body.
+
+Request example: `foo:mongodb://example.com:27017/admin?db=test&collection=blah&count={\"status\":\"active\"}`
+
 #### `docker` provider
 
 Checks if docker service is available and required container (optional) are running.  The `containers` parameter is a list of required container names separated by `:`

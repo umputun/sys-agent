@@ -50,7 +50,7 @@ func TestFileProvider_Status(t *testing.T) {
 	}
 
 	{ // check size change,  changed
-		err = os.WriteFile(fname, []byte("pong 1234567890"), 0o644)
+		err = os.WriteFile(fname, []byte("pong 1234567890"), 0o600)
 		require.NoError(t, err)
 		resp, err := p.Status(Request{Name: "r1", URL: "file://" + fname})
 		require.NoError(t, err)
