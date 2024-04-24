@@ -49,6 +49,11 @@ func (m *MongoProvider) Status(req Request) (*Response, error) {
 		return nil, fmt.Errorf("mongo repl status failed: %s %s: %w", req.Name, req.URL, err)
 	}
 
+	count, err := m.countQuery(ctx, client, uu)
+	if err != nil {
+		return nil, fmt.Errorf("mongo count query failed: %s %s: %w", req.Name, req.URL, err)
+	}
+
 	result := Response{
 		Name:         req.Name,
 		StatusCode:   200,
@@ -58,13 +63,15 @@ func (m *MongoProvider) Status(req Request) (*Response, error) {
 	if rs != nil {
 		result.Body["rs"] = rs
 	}
+	if count >= 0 {
+		result.Body["count"] = count
+	}
 	return &result, nil
 }
 
 // replStatus gets replica set status if mongo configured as replica set
 // for standalone mongo returns nil map
 func (m *MongoProvider) replStatus(ctx context.Context, client *mdrv.Client, req *url.URL) (*replSet, error) {
-
 	rs := client.Database("admin").RunCommand(ctx, bson.M{"replSetGetStatus": 1})
 	if rs.Err() != nil {
 		if !strings.Contains(rs.Err().Error(), "NoReplicationEnabled") {
@@ -101,9 +108,9 @@ type replSetMember struct {
 // parseReplStatus parses replSet status bson.M and returns replSet struct
 // it supports multiple flavors of replSet status returned by various mongo versions
 func (m *MongoProvider) parseReplStatus(req *url.URL, data bson.M) (res *replSet, err error) {
-
 	defer func() {
-		// the code below doing type assertions. Even if each case is covered/checked we better have recover, just in case
+		// the code below doing type assertions.
+		// Even if each case is covered/checked we better have recover, just in case
 		if r := recover(); r != nil {
 			err = fmt.Errorf("failed: %v", r)
 		}
@@ -169,4 +176,28 @@ func (m *MongoProvider) parseReplStatus(req *url.URL, data bson.M) (res *replSet
 	}
 
 	return replset, nil
+}
+
+// countQuery returns number of documents in the collection matching the filter
+// request URL looks like this:	mongo:mongodb://blah:27017/test?db=test&collection=users&count={"status":"active"}
+func (m *MongoProvider) countQuery(ctx context.Context, client *mdrv.Client, req *url.URL) (int64, error) {
+	countQuery := req.Query().Get("count")
+	if countQuery == "" {
+		return -1, nil // no count filter requested
+	}
+	collection := req.Query().Get("collection")
+	db := req.Query().Get("db")
+	if collection == "" || db == "" {
+		return 0, fmt.Errorf("collection and db should be provided for count query")
+	}
+	filter := bson.M{}
+	if err := bson.UnmarshalExtJSON([]byte(countQuery), true, &filter); err != nil {
+		return 0, fmt.Errorf("mongo filter can't be parsed: %w", err)
+	}
+	coll := client.Database(db).Collection(collection)
+	count, err := coll.CountDocuments(ctx, filter)
+	if err != nil {
+		return 0, fmt.Errorf("mongo count failed: %w", err)
+	}
+	return count, nil
 }

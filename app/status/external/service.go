@@ -65,7 +65,7 @@ func NewService(providers Providers, concurrency int, reqs ...string) *Service {
 			req.Name = r[:i]
 			req.URL = r[i+1:]
 
-			if len(req.Name) > 0 && len(req.URL) > 0 {
+			if req.Name != "" && req.URL != "" {
 				result.requests = append(result.requests, req)
 			}
 			log.Printf("[DEBUG] service: name:%s, url:%s", req.Name, req.URL)
@@ -85,7 +85,7 @@ func (s *Service) Status() []Response {
 	for _, req := range s.requests {
 		r := req
 
-		wg.Go(func(ctx context.Context) {
+		wg.Go(func(context.Context) {
 
 			var (
 				resp *Response
