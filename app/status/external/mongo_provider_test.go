@@ -197,3 +197,48 @@ func TestMongoProvider_count(t *testing.T) {
 		require.ErrorContains(t, err, "collection and db should be provided for count query")
 	})
 }
+
+func TestMongoProvider_countWithDate(t *testing.T) {
+	nytz, err := time.LoadLocation("America/New_York")
+	require.NoError(t, err)
+	dt := time.Date(2024, 5, 7, 16, 30, 0, 0, nytz)
+
+	_, coll, teardown := mongo.MakeTestConnection(t)
+	defer teardown()
+	_, err = coll.InsertMany(context.Background(), []any{
+		bson.M{"name": "foo", "status": "active", "dt": dt},
+		bson.M{"name": "bar", "status": "active", "dt": dt.AddDate(0, 0, -1)},
+		bson.M{"name": "baz", "status": "inactive", "dt": dt.AddDate(0, 0, -2)},
+		bson.M{"name": "baz2", "status": "active", "dt": dt.AddDate(0, 0, -3)},
+	})
+	require.NoError(t, err)
+	t.Logf("collection: %s", coll.Name())
+
+	p := MongoProvider{TimeOut: time.Second, now: func() time.Time { return dt }}
+
+	t.Run("valid count query, 5 days back", func(t *testing.T) {
+		query := `{"status":"active", "dt":{"$gte":[[.YYYYMMDD5]]} }`
+		parsed := NewDayTemplate(dt).Parse(query)
+		assert.Equal(t, `{"status":"active", "dt":{"$gte":{"$date":"2024-05-02T20:30:00Z"}} }`, parsed)
+
+		mongoURL := fmt.Sprintf("mongodb://localhost:27017/admin?db=test&collection=%s&count=%s", coll.Name(), query)
+		t.Logf("url: %s", mongoURL)
+		resp, err := p.Status(Request{Name: "test", URL: mongoURL})
+		require.NoError(t, err)
+		t.Logf("%+v", resp)
+		assert.Equal(t, int64(3), resp.Body["count"])
+	})
+
+	t.Run("valid count query, 1 day back", func(t *testing.T) {
+		query := `{"status":"active", "dt":{"$gte":[[.YYYYMMDD1]]} }`
+		parsed := NewDayTemplate(dt).Parse(query)
+		assert.Equal(t, `{"status":"active", "dt":{"$gte":{"$date":"2024-05-06T20:30:00Z"}} }`, parsed)
+
+		mongoURL := fmt.Sprintf("mongodb://localhost:27017/admin?db=test&collection=%s&count=%s", coll.Name(), query)
+		t.Logf("url: %s", mongoURL)
+		resp, err := p.Status(Request{Name: "test", URL: mongoURL})
+		require.NoError(t, err)
+		t.Logf("%+v", resp)
+		assert.Equal(t, int64(2), resp.Body["count"])
+	})
+}

@@ -182,6 +182,8 @@ In addition, `mongodb` can also check count of documents in a collection for a g
 
 Request example: `foo:mongodb://example.com:27017/admin?db=test&collection=blah&count={\"status\":\"active\"}`
 
+In some cases, request should be limited by some date range. In this case, the query can contain `[[.YYYYMMDD]]` and `[[.YYYYMMDD1]]` to `[[.YYYYMMDD5]]` template placeholders. They will be replaced with the current date and the date of the previous day, 2 days ago, etc.
+
 #### `docker` provider
 
 Checks if docker service is available and required container (optional) are running.  The `containers` parameter is a list of required container names separated by `:`

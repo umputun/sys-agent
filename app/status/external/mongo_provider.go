@@ -1,11 +1,13 @@
 package external
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"log"
 	"net/url"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/go-pkgz/mongo/v2"
@@ -19,6 +21,8 @@ import (
 // MongoProvider is a status provider that uses mongo
 type MongoProvider struct {
 	TimeOut time.Duration
+
+	now func() time.Time // for testing
 }
 
 // Status returns status of mongo, checks if connection established and ping is ok
@@ -28,6 +32,10 @@ func (m *MongoProvider) Status(req Request) (*Response, error) {
 	st := time.Now()
 	ctx, cancel := context.WithTimeout(context.Background(), m.TimeOut)
 	defer cancel()
+
+	if m.now == nil {
+		m.now = time.Now
+	}
 
 	client, _, err := mongo.Connect(ctx, mopt.Client().SetAppName("sys-agent").SetConnectTimeout(m.TimeOut), req.URL)
 	if err != nil {
@@ -185,13 +193,16 @@ func (m *MongoProvider) countQuery(ctx context.Context, client *mdrv.Client, req
 	if countQuery == "" {
 		return -1, nil // no count filter requested
 	}
+	dt := NewDayTemplate(m.now())
+	countQuery = dt.Parse(countQuery) // replace date templates with actual dates, i.e. {"date": "[[.YYYYMMDD]]:00:00:00Z"}
+
 	collection := req.Query().Get("collection")
 	db := req.Query().Get("db")
 	if collection == "" || db == "" {
 		return 0, fmt.Errorf("collection and db should be provided for count query")
 	}
 	filter := bson.M{}
-	if err := bson.UnmarshalExtJSON([]byte(countQuery), true, &filter); err != nil {
+	if err := bson.UnmarshalExtJSON([]byte(countQuery), false, &filter); err != nil {
 		return 0, fmt.Errorf("mongo filter can't be parsed: %w", err)
 	}
 	coll := client.Database(db).Collection(collection)
@@ -200,4 +211,54 @@ func (m *MongoProvider) countQuery(ctx context.Context, client *mdrv.Client, req
 		return 0, fmt.Errorf("mongo count failed: %w", err)
 	}
 	return count, nil
+}
+
+// DayTemplate used to translate templates with date info
+type DayTemplate struct {
+	YYYYMMDD  string
+	YYYYMMDD1 string // yesterday
+	YYYYMMDD2 string // -2 days
+	YYYYMMDD3 string // -3 days
+	YYYYMMDD4 string // -4 days
+	YYYYMMDD5 string // -5 days
+	YYYYMMDD6 string // -6 days
+	YYYYMMDD7 string // -7 days
+}
+
+// NewDayTemplate makes day parser for given date
+// ts - time to make template for
+func NewDayTemplate(ts time.Time) *DayTemplate {
+	lts := ts.In(time.UTC)
+	d := &DayTemplate{
+		YYYYMMDD: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
+			lts.Year(), lts.Month(), lts.Day(), lts.Hour(), lts.Minute(), lts.Second()),
+		YYYYMMDD1: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
+			lts.AddDate(0, 0, -1).Year(), lts.AddDate(0, 0, -1).Month(), lts.AddDate(0, 0, -1).Day(),
+			lts.AddDate(0, 0, -1).Hour(), lts.AddDate(0, 0, -1).Minute(), lts.AddDate(0, 0, -1).Second()),
+		YYYYMMDD2: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
+			lts.AddDate(0, 0, -2).Year(), lts.AddDate(0, 0, -2).Month(), lts.AddDate(0, 0, -2).Day(),
+			lts.AddDate(0, 0, -2).Hour(), lts.AddDate(0, 0, -2).Minute(), lts.AddDate(0, 0, -2).Second()),
+		YYYYMMDD3: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
+			lts.AddDate(0, 0, -3).Year(), lts.AddDate(0, 0, -3).Month(), lts.AddDate(0, 0, -3).Day(),
+			lts.AddDate(0, 0, -3).Hour(), lts.AddDate(0, 0, -3).Minute(), lts.AddDate(0, 0, -3).Second()),
+		YYYYMMDD4: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
+			lts.AddDate(0, 0, -4).Year(), lts.AddDate(0, 0, -4).Month(), lts.AddDate(0, 0, -4).Day(),
+			lts.AddDate(0, 0, -4).Hour(), lts.AddDate(0, 0, -4).Minute(), lts.AddDate(0, 0, -4).Second()),
+		YYYYMMDD5: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
+			lts.AddDate(0, 0, -5).Year(), lts.AddDate(0, 0, -5).Month(), lts.AddDate(0, 0, -5).Day(),
+			lts.AddDate(0, 0, -5).Hour(), lts.AddDate(0, 0, -5).Minute(), lts.AddDate(0, 0, -5).Second()),
+	}
+
+	return d
+}
+
+// Parse translate template to final string
+func (d DayTemplate) Parse(dayTemplate string) string {
+	b1 := bytes.Buffer{}
+	tmpl := template.New("ymd").Delims("[[", "]]")
+	err := template.Must(tmpl.Parse(dayTemplate)).Execute(&b1, d)
+	if err != nil {
+		log.Printf("[WARN] failed to parse day from %s", dayTemplate)
+	}
+	return b1.String()
 }
