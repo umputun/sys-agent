@@ -4,8 +4,6 @@ ARG GIT_BRANCH
 ARG GITHUB_SHA
 ARG CI
 
-ENV GOFLAGS="-mod=vendor"
-
 ADD . /build
 WORKDIR /build
 
