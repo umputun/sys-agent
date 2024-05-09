@@ -16,6 +16,8 @@ RUN \
 
 
 FROM umputun/baseimage:scratch-latest
+# enables automatic changelog generation by tools like Dependabot
+LABEL org.opencontainers.image.source="https://github.com/umputun/sys-agent"
 COPY --from=build /build/sys-agent /srv/sys-agent
 WORKDIR /srv
 EXPOSE 8080
