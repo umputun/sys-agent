@@ -11,7 +11,7 @@ require (
 	github.com/go-pkgz/mongo/v2 v2.2.0
 	github.com/go-pkgz/rest v1.19.0
 	github.com/go-pkgz/syncs v1.3.2
-	github.com/shirou/gopsutil/v3 v3.24.4
+	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/stretchr/testify v1.9.0
 	github.com/umputun/go-flags v1.5.1
 	go.mongodb.org/mongo-driver v1.15.0
@@ -38,6 +38,6 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	golang.org/x/crypto v0.22.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 )
