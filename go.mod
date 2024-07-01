@@ -3,9 +3,9 @@ module github.com/umputun/sys-agent
 go 1.22
 
 require (
-	github.com/didip/tollbooth/v7 v7.0.1
+	github.com/didip/tollbooth/v7 v7.0.2
 	github.com/didip/tollbooth_chi v0.0.0-20220719025231-d662a7f6928f
-	github.com/go-chi/chi/v5 v5.0.12
+	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-pkgz/fileutils v0.2.0
 	github.com/go-pkgz/lgr v0.11.1
 	github.com/go-pkgz/mongo/v2 v2.2.0
@@ -14,14 +14,14 @@ require (
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/stretchr/testify v1.9.0
 	github.com/umputun/go-flags v1.5.1
-	go.mongodb.org/mongo-driver v1.15.0
+	go.mongodb.org/mongo-driver v1.16.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
-	github.com/go-pkgz/expirable-cache v1.0.0 // indirect
+	github.com/go-pkgz/expirable-cache/v3 v3.0.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/lufia/plan9stats v0.0.0-20240408141607-282e7b5d6b74 // indirect
