@@ -224,6 +224,8 @@ type DayTemplate struct {
 	YYYYMMDD6 string // -6 days
 	YYYYMMDD7 string // -7 days
 	NOW       string // now time, with seconds precision
+	NOW1M     string // now time -1m, with seconds precision
+	NOW5M     string // now time -5m, with seconds precision
 }
 
 // NewDayTemplate makes day parser for given date
@@ -250,6 +252,12 @@ func NewDayTemplate(ts time.Time) *DayTemplate {
 			lts.AddDate(0, 0, -5).Hour(), lts.AddDate(0, 0, -5).Minute(), lts.AddDate(0, 0, -5).Second()),
 		NOW: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
 			lts.Year(), lts.Month(), lts.Day(), lts.Hour(), lts.Minute(), lts.Second()),
+		NOW1M: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
+			lts.Add(-1*time.Minute).Year(), lts.Add(-1*time.Minute).Month(), lts.Add(-1*time.Minute).Day(),
+			lts.Add(-1*time.Minute).Hour(), lts.Add(-1*time.Minute).Minute(), lts.Add(-1*time.Minute).Second()),
+		NOW5M: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
+			lts.Add(-5*time.Minute).Year(), lts.Add(-5*time.Minute).Month(), lts.Add(-5*time.Minute).Day(),
+			lts.Add(-5*time.Minute).Hour(), lts.Add(-5*time.Minute).Minute(), lts.Add(-5*time.Minute).Second()),
 	}
 
 	return d
