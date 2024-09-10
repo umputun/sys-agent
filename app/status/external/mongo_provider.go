@@ -223,6 +223,7 @@ type DayTemplate struct {
 	YYYYMMDD5 string // -5 days
 	YYYYMMDD6 string // -6 days
 	YYYYMMDD7 string // -7 days
+	NOW       string // now time, with seconds precision
 }
 
 // NewDayTemplate makes day parser for given date
@@ -247,6 +248,8 @@ func NewDayTemplate(ts time.Time) *DayTemplate {
 		YYYYMMDD5: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
 			lts.AddDate(0, 0, -5).Year(), lts.AddDate(0, 0, -5).Month(), lts.AddDate(0, 0, -5).Day(),
 			lts.AddDate(0, 0, -5).Hour(), lts.AddDate(0, 0, -5).Minute(), lts.AddDate(0, 0, -5).Second()),
+		NOW: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
+			lts.Year(), lts.Month(), lts.Day(), lts.Hour(), lts.Minute(), lts.Second()),
 	}
 
 	return d
