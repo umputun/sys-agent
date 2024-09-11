@@ -226,6 +226,13 @@ type DayTemplate struct {
 	NOW       string // now time, with seconds precision
 	NOW1M     string // now time -1m, with seconds precision
 	NOW5M     string // now time -5m, with seconds precision
+	NOW10M    string // now time -10m, with seconds precision
+	NOW15M    string // now time -15m, with seconds precision
+	NOW30M    string // now time -30m, with seconds precision
+	NOW1H     string // now time -1h, with seconds precision
+	NOW5H     string // now time -5h, with seconds precision
+	NOW12H    string // now time -12h, with seconds precision
+
 }
 
 // NewDayTemplate makes day parser for given date
@@ -250,6 +257,7 @@ func NewDayTemplate(ts time.Time) *DayTemplate {
 		YYYYMMDD5: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
 			lts.AddDate(0, 0, -5).Year(), lts.AddDate(0, 0, -5).Month(), lts.AddDate(0, 0, -5).Day(),
 			lts.AddDate(0, 0, -5).Hour(), lts.AddDate(0, 0, -5).Minute(), lts.AddDate(0, 0, -5).Second()),
+
 		NOW: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
 			lts.Year(), lts.Month(), lts.Day(), lts.Hour(), lts.Minute(), lts.Second()),
 		NOW1M: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
@@ -258,6 +266,24 @@ func NewDayTemplate(ts time.Time) *DayTemplate {
 		NOW5M: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
 			lts.Add(-5*time.Minute).Year(), lts.Add(-5*time.Minute).Month(), lts.Add(-5*time.Minute).Day(),
 			lts.Add(-5*time.Minute).Hour(), lts.Add(-5*time.Minute).Minute(), lts.Add(-5*time.Minute).Second()),
+		NOW10M: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
+			lts.Add(-10*time.Minute).Year(), lts.Add(-10*time.Minute).Month(), lts.Add(-10*time.Minute).Day(),
+			lts.Add(-10*time.Minute).Hour(), lts.Add(-10*time.Minute).Minute(), lts.Add(-10*time.Minute).Second()),
+		NOW15M: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
+			lts.Add(-15*time.Minute).Year(), lts.Add(-15*time.Minute).Month(), lts.Add(-15*time.Minute).Day(),
+			lts.Add(-15*time.Minute).Hour(), lts.Add(-15*time.Minute).Minute(), lts.Add(-15*time.Minute).Second()),
+		NOW30M: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
+			lts.Add(-30*time.Minute).Year(), lts.Add(-30*time.Minute).Month(), lts.Add(-30*time.Minute).Day(),
+			lts.Add(-30*time.Minute).Hour(), lts.Add(-30*time.Minute).Minute(), lts.Add(-30*time.Minute).Second()),
+		NOW1H: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
+			lts.Add(-1*time.Hour).Year(), lts.Add(-1*time.Hour).Month(), lts.Add(-1*time.Hour).Day(),
+			lts.Add(-1*time.Hour).Hour(), lts.Add(-1*time.Hour).Minute(), lts.Add(-1*time.Hour).Second()),
+		NOW5H: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
+			lts.Add(-5*time.Hour).Year(), lts.Add(-5*time.Hour).Month(), lts.Add(-5*time.Hour).Day(),
+			lts.Add(-5*time.Hour).Hour(), lts.Add(-5*time.Hour).Minute(), lts.Add(-5*time.Hour).Second()),
+		NOW12H: fmt.Sprintf(`{"$date":"%04d-%02d-%02dT%02d:%02d:%02dZ"}`,
+			lts.Add(-12*time.Hour).Year(), lts.Add(-12*time.Hour).Month(), lts.Add(-12*time.Hour).Day(),
+			lts.Add(-12*time.Hour).Hour(), lts.Add(-12*time.Hour).Minute(), lts.Add(-12*time.Hour).Second()),
 	}
 
 	return d
