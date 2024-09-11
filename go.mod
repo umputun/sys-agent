@@ -11,6 +11,7 @@ require (
 	github.com/go-pkgz/mongo/v2 v2.2.1
 	github.com/go-pkgz/rest v1.19.0
 	github.com/go-pkgz/syncs v1.3.2
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/stretchr/testify v1.9.0
 	github.com/umputun/go-flags v1.5.1

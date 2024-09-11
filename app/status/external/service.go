@@ -2,13 +2,17 @@ package external
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-pkgz/syncs"
+	"github.com/robfig/cron/v3"
 )
 
 //go:generate moq -out provider_mock.go -skip-ensure -fmt goimports . StatusProvider
@@ -18,6 +22,12 @@ type Service struct {
 	requests    []Request
 	concurrency int
 	providers   Providers
+
+	lastResponses struct {
+		cache map[Request]Response
+		mu    sync.RWMutex
+	}
+	nowFn func() time.Time // for testing
 }
 
 // Providers is a list of StatusProvider
@@ -57,7 +67,9 @@ func NewService(providers Providers, concurrency int, reqs ...string) *Service {
 	result := &Service{
 		concurrency: concurrency,
 		providers:   providers,
+		nowFn:       time.Now,
 	}
+	result.lastResponses.cache = make(map[Request]Response)
 
 	for _, r := range reqs {
 		var req Request
@@ -86,6 +98,19 @@ func (s *Service) Status() []Response {
 		r := req
 
 		wg.Go(func(context.Context) {
+			cronOk, cronErr := s.cronFilter(r.URL)
+			if cronErr != nil {
+				log.Printf("[WARN] failed to parse cron expression for service %s: %v", r.Name, cronErr)
+			}
+			if !cronOk && cronErr == nil {
+				log.Printf("[DEBUG] skipping service %s, cron expression does not match", r.Name)
+				s.lastResponses.mu.RLock()
+				if lastResp, ok := s.lastResponses.cache[r]; ok {
+					ch <- lastResp // respond with last response if cron expression does not match
+				}
+				s.lastResponses.mu.RUnlock()
+				return
+			}
 
 			var (
 				resp *Response
@@ -124,6 +149,12 @@ func (s *Service) Status() []Response {
 
 			resp.ResponseTime = time.Since(st).Milliseconds()
 			ch <- *resp
+
+			// storing last response to cache, will be used to respond to cron-excluded requests
+			s.lastResponses.mu.Lock()
+			s.lastResponses.cache[r] = *resp
+			s.lastResponses.mu.Unlock()
+
 			log.Printf("[DEBUG] service response: %s:%s %+v", r.Name, r.URL, *resp)
 		})
 	}
@@ -135,4 +166,31 @@ func (s *Service) Status() []Response {
 	}
 	sort.Slice(res, func(i, j int) bool { return res[i].Name < res[j].Name })
 	return res
+}
+
+// cronFilter checks if the current time matches the cron expression in the URL
+// If no cron expression is set, always return true
+func (s *Service) cronFilter(reqURL string) (bool, error) {
+	parsedURL, err := url.Parse(reqURL)
+	if err != nil {
+		return false, fmt.Errorf("failed to parse URL: %w", err)
+	}
+
+	cronExpr := parsedURL.Query().Get("cron")
+	if cronExpr == "" {
+		return true, nil // no cron expression is set, return true
+	}
+	cronExpr = strings.TrimSpace(cronExpr)
+	cronExpr = strings.ReplaceAll(cronExpr, "_", " ")
+
+	parser := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)
+	schedule, err := parser.Parse(cronExpr)
+	if err != nil {
+		return false, err
+	}
+
+	now := s.nowFn()
+	nextTime := schedule.Next(now)
+	diff := nextTime.Sub(now)
+	return now.Before(nextTime) && diff <= time.Minute, nil
 }

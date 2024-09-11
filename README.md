@@ -8,9 +8,9 @@ SysAgent is a simple service reporting server status via HTTP GET request. It is
 
 `sys-agent` can run directly on a server (systemd service provided) or as a docker container (multi-arch container provided).
 
-All the configuration is done via a few command line options/environment variables. Generally, user should define a list of data volumes to be reported and optional external services to be checked. Volumes report capacity/utilization. CPU related metrics, like LAs, overall utilization and number of running processes are always reported, as well as memory usage.
+All the configuration is done via a few command line options/environment variables. Generally, the user should define a list of data volumes to be reported and optional external services to be checked. Volumes report capacity/utilization. CPU-related metrics, like LAs, overall utilization, and the number of running processes are always reported, as well as memory usage.
 
-The idea of external services is to be able to integrate status of all related services into a single response. This way a singe json response can report instance metrics as well as status of http health check, status of running containers, etc.
+The idea of external services is to be able to integrate the status of all related services into a single response. This way a single JSON response can report instance metrics as well as the status of HTTP health check, the status of running containers, etc.
 
 ## installation
 
@@ -110,7 +110,7 @@ The config file has the same structure as command line options. `sys-agent` conv
 
 ## external services
 
-In addition to the basic checks `sys-agent` can report status of external services. Each service defined as name:url pair for supported protocols (`http`, `mongodb`, `docker`, `file`, `nginx`, `cert` and `program` ). Each servce will be reported as a separate element in the response and all responses have the similar structure: `name` (service name),  `status_code` (`200` or `4xx`) and `response_time` in milliseconds. The `body` includes the response details json, different for each service.
+In addition to the basic checks `sys-agent` can report the status of external services. Each service is defined as a "name:url" pair for supported protocols (`http`, `mongodb`, `docker`, `file`, `nginx`, `cert`, `rmq` and `program`). Each service will be reported as a separate element in the response, and all responses have a similar structure: `name` (service name), `status_code` (`200` or `4xx`), and `response_time` in milliseconds. The `body` includes the response details JSON, different for each service.
 
 ### service providers (protocols)
 
@@ -139,7 +139,7 @@ note: `body.text` field will include the original response body if response is n
 
 #### `mongodb` provider
 
-Checks if mongo available and report status of replica set (for non-standalone configurations only). All the nodes should be in valid state and oplog time difference should be less than 60 seconds by default. User can change the default via `oplogMaxDelta` query parameter.
+Check if MongoDB is available and report the status of the replica set (for non-standalone configurations only). All the nodes should be in a valid state, and the oplog time difference should be less than 60 seconds by default. Users can change the default via the `oplogMaxDelta` query parameter.
 
 Request examples:
 - `foo:mongodb://example.com:27017/` - check if mongo is available, no authentication
@@ -186,7 +186,7 @@ In some cases, request should be limited by some date range. In this case, the q
 
 #### `docker` provider
 
-Checks if docker service is available and required container (optional) are running.  The `containers` parameter is a list of required container names separated by `:`
+Check if the Docker service is available and if the required container (optional) is running. The `containers` parameter is a list of required container names separated by `:`.
 
 Request examples:
 - `foo:docker://example.com:2375/` - check if docker is available
@@ -266,7 +266,7 @@ Request examples:
 
 #### `nginx` provider
 
-This check runs request to nginx status page, checks and parse the response. In order to use this provider you need to have nginx with enabled `stub_status`.
+This check runs a request to the nginx status page, checks, and parses the response. In order to use this provider, you need to have nginx with the `stub_status` enabled.
 
 ```nginx
     location /nginx_status {
@@ -301,7 +301,7 @@ All the values are parsed directly from the response except `change_handled` whi
 
 #### `certificate` provider
 
-Checks if certificate expired or going to expire in the next 5 days.
+Checks if the certificate has expired or is going to expire in the next 5 days.
 
 Request examples:
 - `foo:cert://example.com` - check if certificate is ok for https://example.com
@@ -327,11 +327,11 @@ Request examples:
 
 #### `file` provider
 
-Checks if file present and sets stats info
+Check if the file is present and set stats info
 
 Request examples:
-- `foo:file://foo/bar.txt` - check if file with relative path exists and sets stats info
-- `bar:file:///srv/foo/bar.txt` - check if file with absolute path exists and sets stats info
+- `foo:file://foo/bar.txt` - Check if a file with a relative path exists and set stats info
+- `bar:file:///srv/foo/bar.txt` - Check if a file with the absolute path exists and set stats info
 
 
 - Response example:
@@ -354,7 +354,7 @@ Request examples:
 }
 ```
 
-In addition to the current file status this provider also keeps track of the difference between current and previous file size and modification time and sets the following values: `size_change` (in bytest) and `modif_change` (in milliseconds).
+In addition to the current file status, this provider also keeps track of the difference between the current and previous file size and modification time and sets the following values: `size_change` (in bytes) and `modif_change` (in milliseconds).
 
 #### `rmq` provider
 
@@ -392,7 +392,15 @@ Request examples:
 }
 ```
 
-In addition to the current status this provider also keeps track of the difference between current and previous number of messages in `messages_delta`.
+In addition to the current status, this provider also keeps track of the difference between current and previous number of messages in `messages_delta`.
+
+### using `cron` parameter to limit provider checks
+
+Each provider url can contain `cron` query parameter to limit checks to specific time. The parameter is a cron expression in the following format: `cron=0 0 * * * *` (seconds, minutes, hours, day of month, month, day of week). Instead of spaces either `+` or `_` can be used.
+
+If the given provider has `cron` parameter and the current time does not match the cron expression, the provider will be skipped. In this case, the response will be returned from the local cache with the last check response.
+
+example: `https://example.com/s1?cron=0_7-18_*_*_*`
 
 ## API
 
@@ -402,7 +410,7 @@ In addition to the current status this provider also keeps track of the differen
 ### example
 
 ```
-$ sys-age -v root:/ -s "s1:https://echo.umputun.com/s1" -s "s2:https://echo.umputun.com/s2" \
+$ sys-age -v root:/ -s "s1:https://echo.umputun.com/s1" -s "s2:https://echo.umputun.com/s2?cron=*_9-18_*_*_*" \
  -s mongo://mongodb://1.2.3.4:27017/ -s docker:///var/run/docker.sock --dbg`
 ```
 
