@@ -13,7 +13,7 @@ require (
 	github.com/go-pkgz/syncs v1.3.2
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/shirou/gopsutil/v3 v3.24.5
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	github.com/umputun/go-flags v1.5.1
 	go.mongodb.org/mongo-driver v1.17.1
 	gopkg.in/yaml.v3 v3.0.1
