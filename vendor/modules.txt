@@ -11,7 +11,7 @@ github.com/didip/tollbooth/v7/limiter
 # github.com/didip/tollbooth_chi v0.0.0-20220719025231-d662a7f6928f
 ## explicit; go 1.14
 github.com/didip/tollbooth_chi
-# github.com/go-chi/chi/v5 v5.1.0
+# github.com/go-chi/chi/v5 v5.2.0
 ## explicit; go 1.14
 github.com/go-chi/chi/v5
 # github.com/go-ole/go-ole v1.3.0
@@ -30,7 +30,7 @@ github.com/go-pkgz/lgr
 # github.com/go-pkgz/mongo/v2 v2.2.1
 ## explicit; go 1.19
 github.com/go-pkgz/mongo/v2
-# github.com/go-pkgz/rest v1.19.0
+# github.com/go-pkgz/rest v1.20.2
 ## explicit; go 1.21
 github.com/go-pkgz/rest
 github.com/go-pkgz/rest/logger
@@ -157,21 +157,26 @@ go.mongodb.org/mongo-driver/x/mongo/driver/operation
 go.mongodb.org/mongo-driver/x/mongo/driver/session
 go.mongodb.org/mongo-driver/x/mongo/driver/topology
 go.mongodb.org/mongo-driver/x/mongo/driver/wiremessage
-# golang.org/x/crypto v0.27.0
+# golang.org/x/crypto v0.31.0
 ## explicit; go 1.20
+golang.org/x/crypto/argon2
+golang.org/x/crypto/bcrypt
+golang.org/x/crypto/blake2b
+golang.org/x/crypto/blowfish
 golang.org/x/crypto/ocsp
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/scrypt
-# golang.org/x/sync v0.8.0
+# golang.org/x/sync v0.10.0
 ## explicit; go 1.18
 golang.org/x/sync/errgroup
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.25.0
+# golang.org/x/sys v0.28.0
 ## explicit; go 1.18
+golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/windows/registry
-# golang.org/x/text v0.18.0
+# golang.org/x/text v0.21.0
 ## explicit; go 1.18
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
