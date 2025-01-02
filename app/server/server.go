@@ -5,11 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/didip/tollbooth/v7"
-	"github.com/didip/tollbooth_chi"
-	"github.com/go-chi/chi/v5"
+	"github.com/didip/tollbooth/v8"
 	log "github.com/go-pkgz/lgr"
 	"github.com/go-pkgz/rest"
+	"github.com/go-pkgz/routegroup"
 
 	"github.com/umputun/sys-agent/app/status"
 )
@@ -55,15 +54,14 @@ func (s *Rest) Run(ctx context.Context) error {
 }
 
 func (s *Rest) router() http.Handler {
-	router := chi.NewRouter()
+	router := routegroup.New(http.NewServeMux())
 	router.Use(rest.Recoverer(log.Default()))
-	router.Use(rest.Throttle(100)) // limit total number of the running requests
+	router.Use(rest.Throttle(100)) // limit the total number of the running requests
 	router.Use(rest.AppInfo("sys-agent", "umputun", s.Version))
 	router.Use(rest.Ping)
-	router.Use(tollbooth_chi.LimitHandler(tollbooth.NewLimiter(10, nil)))
+	router.Use(tollbooth.HTTPMiddleware(tollbooth.NewLimiter(10, nil)))
 
-	router.Get("/status", func(w http.ResponseWriter, r *http.Request) {
-
+	router.HandleFunc("GET /status", func(w http.ResponseWriter, r *http.Request) {
 		resp, err := s.Status.Get()
 		if err != nil {
 			rest.SendErrorJSON(w, r, log.Default(), http.StatusInternalServerError, err, "failed to get status")
