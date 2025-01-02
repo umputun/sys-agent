@@ -74,7 +74,7 @@ func (s Service) Get() (*Info, error) {
 
 	res := Info{
 		HostName:   hostStat.Hostname,
-		Procs:      int(hostStat.Procs),
+		Procs:      int(hostStat.Procs), //nolint: gosec // overflow is not possible
 		HostID:     hostStat.HostID,
 		CPUPercent: int(cpup[0]),
 		MemPercent: int(memp.UsedPercent),
