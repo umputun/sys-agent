@@ -4,17 +4,17 @@ go 1.23
 
 require (
 	github.com/didip/tollbooth/v8 v8.0.1
-	github.com/go-pkgz/fileutils v0.2.0
+	github.com/go-pkgz/fileutils v0.3.0
 	github.com/go-pkgz/lgr v0.11.1
 	github.com/go-pkgz/mongo/v2 v2.2.1
 	github.com/go-pkgz/rest v1.20.2
-	github.com/go-pkgz/routegroup v1.3.0
+	github.com/go-pkgz/routegroup v1.3.1
 	github.com/go-pkgz/syncs v1.3.2
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/stretchr/testify v1.10.0
 	github.com/umputun/go-flags v1.5.1
-	go.mongodb.org/mongo-driver v1.17.1
+	go.mongodb.org/mongo-driver v1.17.3
 	gopkg.in/yaml.v3 v3.0.1
 )
 

@@ -15,7 +15,7 @@ github.com/go-ole/go-ole/oleutil
 # github.com/go-pkgz/expirable-cache/v3 v3.0.0
 ## explicit; go 1.20
 github.com/go-pkgz/expirable-cache/v3
-# github.com/go-pkgz/fileutils v0.2.0
+# github.com/go-pkgz/fileutils v0.3.0
 ## explicit; go 1.19
 github.com/go-pkgz/fileutils
 # github.com/go-pkgz/lgr v0.11.1
@@ -29,7 +29,7 @@ github.com/go-pkgz/mongo/v2
 github.com/go-pkgz/rest
 github.com/go-pkgz/rest/logger
 github.com/go-pkgz/rest/realip
-# github.com/go-pkgz/routegroup v1.3.0
+# github.com/go-pkgz/routegroup v1.3.1
 ## explicit; go 1.22
 github.com/go-pkgz/routegroup
 # github.com/go-pkgz/syncs v1.3.2
@@ -105,7 +105,7 @@ github.com/youmark/pkcs8
 # github.com/yusufpapurcu/wmi v1.2.4
 ## explicit; go 1.16
 github.com/yusufpapurcu/wmi
-# go.mongodb.org/mongo-driver v1.17.1
+# go.mongodb.org/mongo-driver v1.17.3
 ## explicit; go 1.18
 go.mongodb.org/mongo-driver/bson
 go.mongodb.org/mongo-driver/bson/bsoncodec
