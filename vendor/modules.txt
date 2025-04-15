@@ -24,7 +24,7 @@ github.com/go-pkgz/lgr
 # github.com/go-pkgz/mongo/v2 v2.2.1
 ## explicit; go 1.19
 github.com/go-pkgz/mongo/v2
-# github.com/go-pkgz/rest v1.20.2
+# github.com/go-pkgz/rest v1.20.3
 ## explicit; go 1.21
 github.com/go-pkgz/rest
 github.com/go-pkgz/rest/logger

@@ -7,7 +7,7 @@ require (
 	github.com/go-pkgz/fileutils v0.3.0
 	github.com/go-pkgz/lgr v0.11.1
 	github.com/go-pkgz/mongo/v2 v2.2.1
-	github.com/go-pkgz/rest v1.20.2
+	github.com/go-pkgz/rest v1.20.3
 	github.com/go-pkgz/routegroup v1.3.1
 	github.com/go-pkgz/syncs v1.3.2
 	github.com/robfig/cron/v3 v3.0.1
