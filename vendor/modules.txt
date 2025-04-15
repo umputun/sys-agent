@@ -8,6 +8,10 @@ github.com/didip/tollbooth/v8/errors
 github.com/didip/tollbooth/v8/internal/time/rate
 github.com/didip/tollbooth/v8/libstring
 github.com/didip/tollbooth/v8/limiter
+# github.com/fsnotify/fsnotify v1.9.0
+## explicit; go 1.17
+github.com/fsnotify/fsnotify
+github.com/fsnotify/fsnotify/internal
 # github.com/go-ole/go-ole v1.3.0
 ## explicit; go 1.12
 github.com/go-ole/go-ole
@@ -15,9 +19,10 @@ github.com/go-ole/go-ole/oleutil
 # github.com/go-pkgz/expirable-cache/v3 v3.0.0
 ## explicit; go 1.20
 github.com/go-pkgz/expirable-cache/v3
-# github.com/go-pkgz/fileutils v0.2.0
+# github.com/go-pkgz/fileutils v0.4.0
 ## explicit; go 1.19
 github.com/go-pkgz/fileutils
+github.com/go-pkgz/fileutils/enum
 # github.com/go-pkgz/lgr v0.12.0
 ## explicit; go 1.21
 github.com/go-pkgz/lgr
