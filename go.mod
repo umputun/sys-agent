@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	github.com/didip/tollbooth/v8 v8.0.1
-	github.com/go-pkgz/fileutils v0.2.0
+	github.com/go-pkgz/fileutils v0.4.0
 	github.com/go-pkgz/lgr v0.12.0
 	github.com/go-pkgz/mongo/v2 v2.2.1
 	github.com/go-pkgz/rest v1.20.3
@@ -20,6 +20,7 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-pkgz/expirable-cache/v3 v3.0.0 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
