@@ -19,10 +19,10 @@ jobs:
 
     steps:
 
-      - name: set up go 1.23
+      - name: set up go 1.24
         uses: actions/setup-go@v5
         with:
-          go-version: "1.23"
+          go-version: "1.24"
         id: go
 
       - name: checkout
@@ -38,9 +38,9 @@ jobs:
           MONGO_TEST: mongodb://127.0.0.1:27017
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: v1.63
+          version: v2.1.1
 
       - name: submit coverage
         run: |
