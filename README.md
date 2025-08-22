@@ -58,6 +58,8 @@ volumes:
 services:
   mongo:
     - {name: dev, url: mongodb://example.com:27017, oplog_max_delta: 30m}
+    # Optional: check document count with db, collection and count_query
+    # - {name: test, url: mongodb://example.com:27017, db: testdb, collection: users, count_query: '{"status":"active"}'}
   certificate:
     - {name: prim_cert, url: https://example1.com}
     - {name: second_cert, url: https://example2.com}
@@ -328,7 +330,7 @@ Request examples:
     "status_code": 200,
     "response_time": 44,
     "body": {
-      "days_left": 73,,
+      "days_left": 73,
       "expire": "2022-09-03T16:31:52Z",
       "status": "ok"
     }
@@ -421,8 +423,8 @@ example: `https://example.com/s1?cron=0_7-18_*_*_*`
 ### example
 
 ```
-$ sys-age -v root:/ -s "s1:https://echo.umputun.com/s1" -s "s2:https://echo.umputun.com/s2?cron=*_9-18_*_*_*" \
- -s mongo://mongodb://1.2.3.4:27017/ -s docker:///var/run/docker.sock --dbg`
+$ sys-agent -v root:/ -s "s1:https://echo.umputun.com/s1" -s "s2:https://echo.umputun.com/s2?cron=*_9-18_*_*_*" \
+ -s mongo:mongodb://1.2.3.4:27017/ -s docker:docker:///var/run/docker.sock --dbg
 ```
 
 request: `curl -s http://localhost:8080/status`
