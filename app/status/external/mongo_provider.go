@@ -65,7 +65,7 @@ func (m *MongoProvider) Status(req Request) (*Response, error) {
 	result := Response{
 		Name:         req.Name,
 		StatusCode:   200,
-		Body:         map[string]interface{}{"status": "ok"},
+		Body:         map[string]any{"status": "ok"},
 		ResponseTime: time.Since(st).Milliseconds(),
 	}
 	if rs != nil {
@@ -118,7 +118,7 @@ type replSetMember struct {
 func (m *MongoProvider) parseReplStatus(req *url.URL, data bson.M) (res *replSet, err error) {
 	defer func() {
 		// the code below doing type assertions.
-		// Even if each case is covered/checked we better have recover, just in case
+		// even if each case is covered/checked we better have recover, just in case
 		if r := recover(); r != nil {
 			err = fmt.Errorf("failed: %v", r)
 		}

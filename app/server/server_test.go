@@ -46,5 +46,5 @@ func TestStatusCtrl(t *testing.T) {
 	assert.Contains(t, string(body), `"cpu_percent":`, string(body))
 	assert.Contains(t, string(body), `"uptime":`, string(body))
 	assert.Contains(t, string(body), `"load_average":`, string(body))
-	assert.Equal(t, 1, len(sts.GetCalls()))
+	assert.Len(t, sts.GetCalls(), 1)
 }

@@ -33,9 +33,9 @@ func (h *HTTPProvider) Status(req Request) (*Response, error) {
 		return nil, fmt.Errorf("http read failed: %s %s: %w", req.Name, req.URL, err)
 	}
 
-	var bodyJSON map[string]interface{}
+	var bodyJSON map[string]any
 	if err := json.Unmarshal(bodyStr, &bodyJSON); err != nil {
-		bodyJSON = map[string]interface{}{"text": string(bodyStr)}
+		bodyJSON = map[string]any{"text": string(bodyStr)}
 	}
 	result := Response{
 		Name:         req.Name,

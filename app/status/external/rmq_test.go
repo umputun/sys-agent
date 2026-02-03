@@ -14,13 +14,13 @@ import (
 
 func TestRMQ_Status(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, "/api/queues/feeds/notification.queue", r.URL.Path)
+		assert.Equal(t, "/api/queues/feeds/notification.queue", r.URL.Path)
 		time.Sleep(100 * time.Millisecond)
 		w.WriteHeader(http.StatusOK)
 		body, err := os.ReadFile("testdata/rmq.json")
-		require.NoError(t, err)
+		assert.NoError(t, err)
 		_, err = w.Write(body)
-		require.NoError(t, err)
+		assert.NoError(t, err)
 	}))
 	defer ts.Close()
 
@@ -36,15 +36,15 @@ func TestRMQ_Status(t *testing.T) {
 
 		assert.Equal(t, "rmq-test", resp.Name)
 		assert.Equal(t, 200, resp.StatusCode)
-		assert.True(t, resp.ResponseTime > 0)
+		assert.Positive(t, resp.ResponseTime)
 		assert.Equal(t, "feeds", resp.Body["vhost"])
 		assert.Equal(t, "notification.queue", resp.Body["name"])
 		assert.Equal(t, 56178, resp.Body["messages"])
 		assert.Equal(t, 56178, resp.Body["messages_ready"])
 		assert.Equal(t, 0, resp.Body["messages_unacknowledged"])
 		assert.Equal(t, 4, resp.Body["consumers"])
-		assert.Equal(t, 15.5, resp.Body["avg_egress_rate"])
-		assert.Equal(t, 19.9, resp.Body["avg_ingress_rate"])
+		assert.InDelta(t, 15.5, resp.Body["avg_egress_rate"], 0.01)
+		assert.InDelta(t, 19.9, resp.Body["avg_ingress_rate"], 0.01)
 		assert.Equal(t, 3771, resp.Body["messages_ready_ram"])
 		assert.Equal(t, 13847734, resp.Body["publish"])
 		assert.Equal(t, 56178, resp.Body["messages_delta"])
@@ -61,7 +61,7 @@ func TestRMQ_Status(t *testing.T) {
 
 func TestRMQ_StatusFailed(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, "/api/queues/feeds/notification.queue", r.URL.Path)
+		assert.Equal(t, "/api/queues/feeds/notification.queue", r.URL.Path)
 		w.WriteHeader(http.StatusInternalServerError)
 	}))
 	defer ts.Close()

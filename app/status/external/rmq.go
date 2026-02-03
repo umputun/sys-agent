@@ -64,7 +64,7 @@ func (h *RMQProvider) Status(req Request) (*Response, error) {
 		return nil, fmt.Errorf("failed to parse RabbitMQ response for %s: %w", req.URL, err)
 	}
 
-	body := make(map[string]interface{})
+	body := make(map[string]any)
 	body["name"] = rec.Name
 	body["consumers"] = rec.Consumers
 	body["messages"] = rec.Messages

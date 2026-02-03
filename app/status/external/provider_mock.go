@@ -9,19 +9,19 @@ import (
 
 // StatusProviderMock is a mock implementation of StatusProvider.
 //
-// 	func TestSomethingThatUsesStatusProvider(t *testing.T) {
+//	func TestSomethingThatUsesStatusProvider(t *testing.T) {
 //
-// 		// make and configure a mocked StatusProvider
-// 		mockedStatusProvider := &StatusProviderMock{
-// 			StatusFunc: func(req Request) (*Response, error) {
-// 				panic("mock out the Status method")
-// 			},
-// 		}
+//		// make and configure a mocked StatusProvider
+//		mockedStatusProvider := &StatusProviderMock{
+//			StatusFunc: func(req Request) (*Response, error) {
+//				panic("mock out the Status method")
+//			},
+//		}
 //
-// 		// use mockedStatusProvider in code that requires StatusProvider
-// 		// and then make assertions.
+//		// use mockedStatusProvider in code that requires StatusProvider
+//		// and then make assertions.
 //
-// 	}
+//	}
 type StatusProviderMock struct {
 	// StatusFunc mocks the Status method.
 	StatusFunc func(req Request) (*Response, error)
@@ -55,7 +55,8 @@ func (mock *StatusProviderMock) Status(req Request) (*Response, error) {
 
 // StatusCalls gets all the calls that were made to Status.
 // Check the length with:
-//     len(mockedStatusProvider.StatusCalls())
+//
+//	len(mockedStatusProvider.StatusCalls())
 func (mock *StatusProviderMock) StatusCalls() []struct {
 	Req Request
 } {

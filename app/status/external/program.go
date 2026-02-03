@@ -50,7 +50,7 @@ func (p *ProgramProvider) Status(req Request) (*Response, error) {
 	err := cmd.Run()
 	resp.ResponseTime = time.Since(st).Milliseconds()
 
-	res := map[string]interface{}{
+	res := map[string]any{
 		"command": command + " " + args,
 		"stdout":  stdOut.String(),
 		"stderr":  stdErr.String(),

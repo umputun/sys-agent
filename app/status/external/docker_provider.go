@@ -61,8 +61,7 @@ func (d *DockerProvider) Status(req Request) (*Response, error) {
 
 	var required []string
 	if uu.Query().Get("containers") != "" {
-		requiredDirty := strings.Split(uu.Query().Get("containers"), ":")
-		for _, r := range requiredDirty {
+		for r := range strings.SplitSeq(uu.Query().Get("containers"), ":") {
 			r = strings.TrimSpace(r)
 			if r == "" {
 				continue
@@ -84,7 +83,7 @@ func (d *DockerProvider) Status(req Request) (*Response, error) {
 	return &result, nil
 }
 
-func (d *DockerProvider) parseDockerResponse(r io.Reader, required []string) (map[string]interface{}, error) {
+func (d *DockerProvider) parseDockerResponse(r io.Reader, required []string) (map[string]any, error) {
 	var dkResp []struct {
 		ID      string `json:"Id"`
 		State   string
@@ -138,7 +137,7 @@ func (d *DockerProvider) parseDockerResponse(r io.Reader, required []string) (ma
 		}
 	}
 
-	res := map[string]interface{}{
+	res := map[string]any{
 		"containers": containers,
 		"total":      len(containers),
 		"healthy":    healthy,

@@ -18,10 +18,11 @@ type NginxProvider struct {
 
 // Status url looks like: nginx://example.com/nginx_status. It will try https first and if it fails http
 // nginx response looks like this:
-//  Active connections: 124
-//  server accepts handled requests
-//   783855 783855 1676992
-//  Reading: 0 Writing: 300 Waiting: 27
+//
+//	Active connections: 124
+//	server accepts handled requests
+//	 783855 783855 1676992
+//	Reading: 0 Writing: 300 Waiting: 27
 func (n *NginxProvider) Status(req Request) (*Response, error) {
 
 	st := time.Now()
@@ -54,8 +55,8 @@ func (n *NginxProvider) Status(req Request) (*Response, error) {
 	return result, nil
 }
 
-func (n *NginxProvider) parseResponse(r io.Reader) (map[string]interface{}, error) {
-	result := make(map[string]interface{})
+func (n *NginxProvider) parseResponse(r io.Reader) (map[string]any, error) {
+	result := make(map[string]any)
 	body, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response: %w", err)

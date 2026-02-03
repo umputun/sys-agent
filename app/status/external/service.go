@@ -55,10 +55,10 @@ type Request struct {
 
 // Response contains extended service information
 type Response struct {
-	Name         string                 `json:"name"`
-	StatusCode   int                    `json:"status_code"`
-	ResponseTime int64                  `json:"response_time"` // milliseconds
-	Body         map[string]interface{} `json:"body,omitempty"`
+	Name         string         `json:"name"`
+	StatusCode   int            `json:"status_code"`
+	ResponseTime int64          `json:"response_time"` // milliseconds
+	Body         map[string]any `json:"body,omitempty"`
 }
 
 // NewService creates new external service supporting multiple providers

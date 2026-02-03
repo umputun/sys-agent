@@ -115,7 +115,9 @@ func (p *Parameters) MarshalVolumes() []string {
 
 // MarshalServices returns the services as a list of strings with the format used by command line
 func (p *Parameters) MarshalServices() []string {
-	res := []string{}
+	size := len(p.Services.HTTP) + len(p.Services.Certificate) + len(p.Services.Docker) +
+		len(p.Services.File) + len(p.Services.Mongo) + len(p.Services.Nginx) + len(p.Services.Program) + len(p.Services.RMQ)
+	res := make([]string, 0, size)
 
 	for _, v := range p.Services.HTTP {
 		res = append(res, fmt.Sprintf("%s:%s", v.Name, v.URL))

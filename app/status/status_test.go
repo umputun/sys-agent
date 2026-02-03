@@ -17,13 +17,13 @@ func TestService_Get(t *testing.T) {
 				Name:         "test1",
 				StatusCode:   200,
 				ResponseTime: 1000,
-				Body:         map[string]interface{}{"status": "ok"},
+				Body:         map[string]any{"status": "ok"},
 			},
 			{
 				Name:         "test2",
 				StatusCode:   200,
 				ResponseTime: 1000,
-				Body:         map[string]interface{}{"status": "ok"},
+				Body:         map[string]any{"status": "ok"},
 			},
 		}
 	}}
@@ -36,15 +36,15 @@ func TestService_Get(t *testing.T) {
 	res, err := svc.Get()
 	require.NoError(t, err)
 	t.Logf("%+v", res)
-	assert.Equal(t, 1, len(res.Volumes))
+	assert.Len(t, res.Volumes, 1)
 	assert.Equal(t, "root", res.Volumes["root"].Name)
 	assert.Equal(t, "/", res.Volumes["root"].Path)
-	assert.True(t, res.Volumes["root"].UsagePercent > 0)
-	assert.True(t, res.MemPercent > 0)
-	assert.True(t, res.Loads.One > 0)
-	assert.True(t, res.Uptime > 0)
+	assert.Positive(t, res.Volumes["root"].UsagePercent)
+	assert.Positive(t, res.MemPercent)
+	assert.Positive(t, res.Loads.One)
+	assert.Positive(t, res.Uptime)
 
-	assert.Equal(t, 2, len(res.ExtServices))
+	assert.Len(t, res.ExtServices, 2)
 }
 
 func TestService_GetNoExt(t *testing.T) {
@@ -56,13 +56,13 @@ func TestService_GetNoExt(t *testing.T) {
 	res, err := svc.Get()
 	require.NoError(t, err)
 	t.Logf("%+v", res)
-	assert.Equal(t, 1, len(res.Volumes))
+	assert.Len(t, res.Volumes, 1)
 	assert.Equal(t, "root", res.Volumes["root"].Name)
 	assert.Equal(t, "/", res.Volumes["root"].Path)
-	assert.True(t, res.Volumes["root"].UsagePercent > 0)
-	assert.True(t, res.MemPercent > 0)
-	assert.True(t, res.Loads.One > 0)
-	assert.True(t, res.Uptime > 0)
+	assert.Positive(t, res.Volumes["root"].UsagePercent)
+	assert.Positive(t, res.MemPercent)
+	assert.Positive(t, res.Loads.One)
+	assert.Positive(t, res.Uptime)
 
-	assert.Equal(t, 0, len(res.ExtServices))
+	assert.Empty(t, res.ExtServices)
 }

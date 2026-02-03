@@ -67,17 +67,17 @@ func TestService_Status(t *testing.T) {
 		"s4:program://ls?arg=1", "s5:cert://umputun.com", "s6:file://blah.txt", "s7:rmq://127.0.0.1:5672", "bad:bad")
 
 	res := s.Status()
-	require.Equal(t, 8, len(res))
-	assert.Equal(t, 1, len(ph.StatusCalls()))
+	require.Len(t, res, 8)
+	assert.Len(t, ph.StatusCalls(), 1)
 	assert.Equal(t, Request{Name: "s1", URL: "http://127.0.0.1/ping"}, ph.StatusCalls()[0].Req)
 
-	assert.Equal(t, 1, len(pm.StatusCalls()))
+	assert.Len(t, pm.StatusCalls(), 1)
 	assert.Equal(t, Request{Name: "s2", URL: "docker:///var/blah"}, pd.StatusCalls()[0].Req)
 
-	assert.Equal(t, 1, len(pd.StatusCalls()))
+	assert.Len(t, pd.StatusCalls(), 1)
 	assert.Equal(t, Request{Name: "s3", URL: "mongodb://127.0.0.1:27017"}, pm.StatusCalls()[0].Req)
 
-	assert.Equal(t, 1, len(pp.StatusCalls()))
+	assert.Len(t, pp.StatusCalls(), 1)
 	assert.Equal(t, Request{Name: "s4", URL: "program://ls?arg=1"}, pp.StatusCalls()[0].Req)
 
 	assert.Equal(t, "bad", res[0].Name)
@@ -108,7 +108,7 @@ func TestService_Status(t *testing.T) {
 func TestService_StatusWithCron(t *testing.T) {
 	mockHTTP := &StatusProviderMock{
 		StatusFunc: func(r Request) (*Response, error) {
-			return &Response{StatusCode: 200, Name: r.Name, Body: map[string]interface{}{"status": "ok"}}, nil
+			return &Response{StatusCode: 200, Name: r.Name, Body: map[string]any{"status": "ok"}}, nil
 		},
 	}
 
@@ -122,7 +122,7 @@ func TestService_StatusWithCron(t *testing.T) {
 		s.nowFn = func() time.Time { return fixedTime }
 		s.lastResponses.cache = make(map[Request]Response)
 		res := s.Status()
-		require.Equal(t, 3, len(res))
+		require.Len(t, res, 3)
 		assert.Contains(t, []string{"s1", "s2", "s4"}, res[0].Name)
 		assert.Contains(t, []string{"s1", "s2", "s4"}, res[1].Name)
 		assert.Contains(t, []string{"s1", "s2", "s4"}, res[2].Name)
@@ -132,7 +132,7 @@ func TestService_StatusWithCron(t *testing.T) {
 		s.nowFn = func() time.Time { return fixedTime.Add(1 * time.Minute) }
 		s.lastResponses.cache = make(map[Request]Response)
 		res := s.Status()
-		require.Equal(t, 1, len(res))
+		require.Len(t, res, 1)
 		assert.Contains(t, []string{"s4"}, res[0].Name)
 	})
 
@@ -140,39 +140,39 @@ func TestService_StatusWithCron(t *testing.T) {
 		s.nowFn = func() time.Time { return fixedTime }
 		s.lastResponses.cache = make(map[Request]Response)
 		res := s.Status()
-		require.Equal(t, 3, len(res))
+		require.Len(t, res, 3)
 
 		s.nowFn = func() time.Time { return fixedTime.Add(1 * time.Minute) }
 		res = s.Status()
-		require.Equal(t, 3, len(res))
+		require.Len(t, res, 3)
 	})
 
 	t.Run("run at 12:05", func(t *testing.T) {
 		s.nowFn = func() time.Time { return fixedTime.Add(5 * time.Minute) }
 		s.lastResponses.cache = make(map[Request]Response)
 		res := s.Status()
-		require.Equal(t, 2, len(res))
+		require.Len(t, res, 2)
 		assert.Contains(t, []string{"s2", "s4"}, res[0].Name)
 		assert.Contains(t, []string{"s2", "s4"}, res[1].Name)
 	})
 
 	t.Run("check caching for skipped checks", func(t *testing.T) {
-		// Run at 12:00 to populate cache
+		// run at 12:00 to populate cache
 		s.nowFn = func() time.Time { return fixedTime }
 		s.lastResponses.cache = make(map[Request]Response)
 		res := s.Status()
-		require.Equal(t, 3, len(res))
+		require.Len(t, res, 3)
 
-		// Modify mock to return different response
+		// modify mock to return different response
 		mockHTTP.StatusFunc = func(r Request) (*Response, error) {
-			return &Response{StatusCode: 200, Name: r.Name, Body: map[string]interface{}{"status": "changed"}}, nil
+			return &Response{StatusCode: 200, Name: r.Name, Body: map[string]any{"status": "changed"}}, nil
 		}
 
-		// Run at 12:01
+		// run at 12:01
 		s.nowFn = func() time.Time { return fixedTime.Add(1 * time.Minute) }
 		res = s.Status()
 
-		require.Equal(t, 3, len(res))
+		require.Len(t, res, 3)
 		for _, r := range res {
 			switch r.Name {
 			case "s1":

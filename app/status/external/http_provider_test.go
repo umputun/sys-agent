@@ -15,7 +15,7 @@ func TestHttpProvider_Status(t *testing.T) {
 		time.Sleep(time.Millisecond * 10)
 		w.WriteHeader(http.StatusOK)
 		_, e := w.Write([]byte(`{"status": "ok", "foo": "bar"}`))
-		require.NoError(t, e)
+		assert.NoError(t, e)
 
 	}))
 
@@ -25,8 +25,8 @@ func TestHttpProvider_Status(t *testing.T) {
 
 	assert.Equal(t, "r1", resp.Name)
 	assert.Equal(t, 200, resp.StatusCode)
-	assert.True(t, resp.ResponseTime > 0)
-	assert.Equal(t, map[string]interface{}{"foo": "bar", "status": "ok"}, resp.Body)
+	assert.Positive(t, resp.ResponseTime)
+	assert.Equal(t, map[string]any{"foo": "bar", "status": "ok"}, resp.Body)
 }
 
 func TestHttpProvider_StatusHttpNoJson(t *testing.T) {
@@ -34,7 +34,7 @@ func TestHttpProvider_StatusHttpNoJson(t *testing.T) {
 		time.Sleep(time.Millisecond * 10)
 		w.WriteHeader(http.StatusOK)
 		_, e := w.Write([]byte(`pong`))
-		require.NoError(t, e)
+		assert.NoError(t, e)
 
 	}))
 
@@ -44,6 +44,6 @@ func TestHttpProvider_StatusHttpNoJson(t *testing.T) {
 
 	assert.Equal(t, "r1", resp.Name)
 	assert.Equal(t, 200, resp.StatusCode)
-	assert.True(t, resp.ResponseTime > 0)
-	assert.Equal(t, map[string]interface{}{"text": "pong"}, resp.Body)
+	assert.Positive(t, resp.ResponseTime)
+	assert.Equal(t, map[string]any{"text": "pong"}, resp.Body)
 }

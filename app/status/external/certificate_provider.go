@@ -34,7 +34,7 @@ func (c *CertificateProvider) Status(req Request) (*Response, error) {
 	}
 
 	daysLeft := int(time.Until(earlierCert).Hours() / 24)
-	body := map[string]interface{}{
+	body := map[string]any{
 		"expire":    earlierCert.Format(time.RFC3339),
 		"days_left": daysLeft,
 		"host":      strings.Replace(req.URL, "cert://", "https://", 1),

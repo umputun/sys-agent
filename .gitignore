@@ -12,3 +12,6 @@ dist/
 .bin/
 *.gpg
 site/public/
+
+.idea/
+.DS_Store

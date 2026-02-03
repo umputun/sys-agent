@@ -45,13 +45,13 @@ func (f *FileProvider) Status(req Request) (*Response, error) {
 		result := Response{
 			Name:         req.Name,
 			StatusCode:   200,
-			Body:         map[string]interface{}{"status": "not found"},
+			Body:         map[string]any{"status": "not found"},
 			ResponseTime: time.Since(st).Milliseconds(),
 		}
 		return &result, nil
 	}
 
-	body := map[string]interface{}{}
+	body := map[string]any{}
 	body["status"] = "found"
 	body["size"] = fi.Size()
 	body["modif_time"] = fi.ModTime().Format(time.RFC3339Nano)

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"slices"
 	"testing"
 	"time"
 
@@ -11,8 +12,7 @@ import (
 func TestNew(t *testing.T) {
 	{
 		_, err := New("testdata/invalid.yml")
-		require.Error(t, err)
-		assert.EqualErrorf(t, err, "can't read config testdata/invalid.yml: open testdata/invalid.yml: no such file or directory", "expected error")
+		require.EqualError(t, err, "can't read config testdata/invalid.yml: open testdata/invalid.yml: no such file or directory")
 	}
 
 	{
@@ -86,14 +86,7 @@ func TestParameters_MarshalServices(t *testing.T) {
 		p.Services.Mongo[0].URL = "mongodb://example.com:27017/admin?foo=bar&blah=blah"
 		exp := "dev:mongodb://example.com:27017/admin?foo=bar&blah=blah&oplogMaxDelta=30m0s"
 		res := p.MarshalServices()
-		found := false
-		for _, r := range res {
-			if r == exp {
-				found = true
-				break
-			}
-		}
-		assert.True(t, found, "expected %s in %v", exp, res)
+		assert.True(t, slices.Contains(res, exp), "expected %s in %v", exp, res)
 	})
 
 	t.Run("mongo with count params", func(t *testing.T) {
@@ -105,13 +98,6 @@ func TestParameters_MarshalServices(t *testing.T) {
 		p.Services.Mongo[0].CountQuery = `{"status":"active"}`
 		exp := `dev:mongodb://example.com:27017/admin?oplogMaxDelta=30m0s&collection=coll&db=test&countQuery={"status":"active"}`
 		res := p.MarshalServices()
-		found := false
-		for _, r := range res {
-			if r == exp {
-				found = true
-				break
-			}
-		}
-		assert.True(t, found, "expected %s in %v", exp, res)
+		assert.True(t, slices.Contains(res, exp), "expected %s in %v", exp, res)
 	})
 }

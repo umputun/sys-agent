@@ -11,19 +11,19 @@ import (
 
 // ExtServicesMock is a mock implementation of ExtServices.
 //
-// 	func TestSomethingThatUsesExtServices(t *testing.T) {
+//	func TestSomethingThatUsesExtServices(t *testing.T) {
 //
-// 		// make and configure a mocked ExtServices
-// 		mockedExtServices := &ExtServicesMock{
-// 			StatusFunc: func() []external.Response {
-// 				panic("mock out the Status method")
-// 			},
-// 		}
+//		// make and configure a mocked ExtServices
+//		mockedExtServices := &ExtServicesMock{
+//			StatusFunc: func() []external.Response {
+//				panic("mock out the Status method")
+//			},
+//		}
 //
-// 		// use mockedExtServices in code that requires ExtServices
-// 		// and then make assertions.
+//		// use mockedExtServices in code that requires ExtServices
+//		// and then make assertions.
 //
-// 	}
+//	}
 type ExtServicesMock struct {
 	// StatusFunc mocks the Status method.
 	StatusFunc func() []external.Response
@@ -52,7 +52,8 @@ func (mock *ExtServicesMock) Status() []external.Response {
 
 // StatusCalls gets all the calls that were made to Status.
 // Check the length with:
-//     len(mockedExtServices.StatusCalls())
+//
+//	len(mockedExtServices.StatusCalls())
 func (mock *ExtServicesMock) StatusCalls() []struct {
 } {
 	var calls []struct {

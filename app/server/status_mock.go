@@ -11,19 +11,19 @@ import (
 
 // StatusMock is a mock implementation of Status.
 //
-// 	func TestSomethingThatUsesStatus(t *testing.T) {
+//	func TestSomethingThatUsesStatus(t *testing.T) {
 //
-// 		// make and configure a mocked Status
-// 		mockedStatus := &StatusMock{
-// 			GetFunc: func() (*status.Info, error) {
-// 				panic("mock out the Get method")
-// 			},
-// 		}
+//		// make and configure a mocked Status
+//		mockedStatus := &StatusMock{
+//			GetFunc: func() (*status.Info, error) {
+//				panic("mock out the Get method")
+//			},
+//		}
 //
-// 		// use mockedStatus in code that requires Status
-// 		// and then make assertions.
+//		// use mockedStatus in code that requires Status
+//		// and then make assertions.
 //
-// 	}
+//	}
 type StatusMock struct {
 	// GetFunc mocks the Get method.
 	GetFunc func() (*status.Info, error)
@@ -52,7 +52,8 @@ func (mock *StatusMock) Get() (*status.Info, error) {
 
 // GetCalls gets all the calls that were made to Get.
 // Check the length with:
-//     len(mockedStatus.GetCalls())
+//
+//	len(mockedStatus.GetCalls())
 func (mock *StatusMock) GetCalls() []struct {
 } {
 	var calls []struct {

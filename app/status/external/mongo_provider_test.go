@@ -25,8 +25,8 @@ func TestMongoProvider_Status(t *testing.T) {
 
 		assert.Equal(t, "test", resp.Name)
 		assert.Equal(t, 200, resp.StatusCode)
-		assert.True(t, resp.ResponseTime > 0)
-		assert.Equal(t, map[string]interface{}{"status": "ok"}, resp.Body)
+		assert.Positive(t, resp.ResponseTime)
+		assert.Equal(t, map[string]any{"status": "ok"}, resp.Body)
 	})
 
 	t.Run("failed", func(t *testing.T) {
@@ -54,7 +54,7 @@ func TestMongoProvider_parseReplStatus(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, "ok", res.Status)
 		assert.Equal(t, "ok", res.OptimeStatus)
-		assert.Equal(t, 4, len(res.Members))
+		assert.Len(t, res.Members, 4)
 		assert.Equal(t, "PRIMARY", res.Members[0].State)
 		assert.Equal(t, "SECONDARY", res.Members[1].State)
 		assert.Equal(t, "SECONDARY", res.Members[2].State)
@@ -77,7 +77,7 @@ func TestMongoProvider_parseReplStatus(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, "ok", res.Status)
 		assert.Equal(t, "failed, optime difference for node2 is 49m19.999999667s", res.OptimeStatus)
-		assert.Equal(t, 4, len(res.Members))
+		assert.Len(t, res.Members, 4)
 		t.Logf("%+v", res)
 	})
 
@@ -219,7 +219,7 @@ func TestMongoProvider_countWithDate(t *testing.T) {
 	t.Run("valid count query, 5 days back", func(t *testing.T) {
 		query := `{"status":"active", "dt":{"$gte":[[.YYYYMMDD5]]} }`
 		parsed := NewDayTemplate(dt).Parse(query)
-		assert.Equal(t, `{"status":"active", "dt":{"$gte":{"$date":"2024-05-02T20:30:00Z"}} }`, parsed)
+		assert.JSONEq(t, `{"status":"active", "dt":{"$gte":{"$date":"2024-05-02T20:30:00Z"}} }`, parsed)
 
 		mongoURL := fmt.Sprintf("mongodb://localhost:27017/admin?db=test&collection=%s&count=%s", coll.Name(), query)
 		t.Logf("url: %s", mongoURL)
@@ -232,7 +232,7 @@ func TestMongoProvider_countWithDate(t *testing.T) {
 	t.Run("valid count query, 1 day back", func(t *testing.T) {
 		query := `{"status":"active", "dt":{"$gte":[[.YYYYMMDD1]]} }`
 		parsed := NewDayTemplate(dt).Parse(query)
-		assert.Equal(t, `{"status":"active", "dt":{"$gte":{"$date":"2024-05-06T20:30:00Z"}} }`, parsed)
+		assert.JSONEq(t, `{"status":"active", "dt":{"$gte":{"$date":"2024-05-06T20:30:00Z"}} }`, parsed)
 
 		mongoURL := fmt.Sprintf("mongodb://localhost:27017/admin?db=test&collection=%s&count=%s", coll.Name(), query)
 		t.Logf("url: %s", mongoURL)

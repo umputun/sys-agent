@@ -30,7 +30,7 @@ func TestFileProvider_Status(t *testing.T) {
 		assert.Equal(t, "pong", resp.Body["content"])
 		assert.Equal(t, "found", resp.Body["status"])
 		assert.Equal(t, int64(4), resp.Body["size"])
-		assert.True(t, resp.Body["since_modif"].(int64) > 100)
+		assert.Greater(t, resp.Body["since_modif"].(int64), int64(100))
 		assert.Equal(t, int64(4), resp.Body["size_change"])
 		assert.Equal(t, int64(0), resp.Body["modif_change"])
 	}
@@ -44,7 +44,7 @@ func TestFileProvider_Status(t *testing.T) {
 		assert.Equal(t, "pong", resp.Body["content"])
 		assert.Equal(t, "found", resp.Body["status"])
 		assert.Equal(t, int64(4), resp.Body["size"])
-		assert.True(t, resp.Body["since_modif"].(int64) > 100)
+		assert.Greater(t, resp.Body["since_modif"].(int64), int64(100))
 		assert.Equal(t, int64(0), resp.Body["size_change"])
 		assert.Equal(t, int64(0), resp.Body["modif_change"])
 	}
@@ -60,9 +60,9 @@ func TestFileProvider_Status(t *testing.T) {
 		assert.Equal(t, "pong 1234567890", resp.Body["content"])
 		assert.Equal(t, "found", resp.Body["status"])
 		assert.Equal(t, int64(15), resp.Body["size"])
-		assert.True(t, resp.Body["since_modif"].(int64) < 100)
+		assert.Less(t, resp.Body["since_modif"].(int64), int64(100))
 		assert.Equal(t, int64(11), resp.Body["size_change"])
-		assert.True(t, resp.Body["modif_change"].(int64) > 100)
+		assert.Greater(t, resp.Body["modif_change"].(int64), int64(100))
 	}
 	{
 		resp, err := p.Status(Request{Name: "r1", URL: "file://testdata/bad.txt"})
