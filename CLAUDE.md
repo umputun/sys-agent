@@ -23,6 +23,7 @@ The codebase follows a clean modular structure:
   - Each provider (HTTP, Mongo, Docker, etc.) handles specific protocol checks
   - Service multiplexes concurrent requests to multiple providers
   - Support for cron-based scheduling and caching of responses
+- **app/actuator**: Spring Boot Actuator compatible health response conversion
 
 Key interfaces:
 - `StatusProvider`: Interface for external service checkers
@@ -80,6 +81,7 @@ Config file structure mirrors CLI options with volumes and services definitions.
 ## API Endpoints
 
 - `GET /status` - Returns complete system and service status in JSON
+- `GET /actuator/health` - Spring Boot Actuator compatible health status
 - `GET /ping` - Health check endpoint (returns "pong")
 
 The server includes middleware for:
