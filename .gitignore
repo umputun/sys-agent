@@ -15,3 +15,5 @@ site/public/
 
 .idea/
 .DS_Store
+# ralphex progress logs
+progress*.txt
