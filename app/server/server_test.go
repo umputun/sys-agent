@@ -147,7 +147,7 @@ func TestActuatorHealthEndpoint_Down(t *testing.T) {
 	resp, err := http.Get(ts.URL + "/actuator/health")
 	require.NoError(t, err)
 	defer resp.Body.Close()
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode, "should return 503 when status is DOWN")
 
 	body, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
