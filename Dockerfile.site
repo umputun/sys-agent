@@ -1,4 +1,4 @@
-FROM  --platform=$BUILDPLATFORM squidfunk/mkdocs-material as build
+FROM --platform=$BUILDPLATFORM squidfunk/mkdocs-material AS build
 
 WORKDIR /build
 COPY site/ /build/
