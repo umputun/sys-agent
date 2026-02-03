@@ -77,7 +77,11 @@ func (s *Rest) router() http.Handler {
 			rest.SendErrorJSON(w, r, log.Default(), http.StatusInternalServerError, err, "failed to get status")
 			return
 		}
-		rest.RenderJSON(w, actuator.FromStatusInfo(info))
+		health := actuator.FromStatusInfo(info)
+		if health.Status == actuator.StatusDown {
+			w.WriteHeader(http.StatusServiceUnavailable)
+		}
+		rest.RenderJSON(w, health)
 	})
 
 	return router
