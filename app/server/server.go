@@ -10,6 +10,7 @@ import (
 	"github.com/go-pkgz/rest"
 	"github.com/go-pkgz/routegroup"
 
+	"github.com/umputun/sys-agent/app/actuator"
 	"github.com/umputun/sys-agent/app/status"
 )
 
@@ -68,6 +69,15 @@ func (s *Rest) router() http.Handler {
 			return
 		}
 		rest.RenderJSON(w, resp)
+	})
+
+	router.HandleFunc("GET /actuator/health", func(w http.ResponseWriter, r *http.Request) {
+		info, err := s.Status.Get()
+		if err != nil {
+			rest.SendErrorJSON(w, r, log.Default(), http.StatusInternalServerError, err, "failed to get status")
+			return
+		}
+		rest.RenderJSON(w, actuator.FromStatusInfo(info))
 	})
 
 	return router
