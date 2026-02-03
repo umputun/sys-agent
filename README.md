@@ -418,9 +418,49 @@ example: `https://example.com/s1?cron=0_7-18_*_*_*`
 ## API
 
  - `GET /status` - returns server status in JSON format
+ - `GET /actuator/health` - returns Spring Boot Actuator compatible health status
  - `GET /ping` - returns `pong`
 
-### example
+### /actuator/health endpoint
+
+The `/actuator/health` endpoint provides Spring Boot Actuator compatible health status, making it easy to integrate with monitoring tools that expect the actuator format (gatus, uptime-kuma, etc.).
+
+**Status determination:**
+- CPU, memory, disk: `UP` if usage < 90%, `DOWN` otherwise
+- External services: `UP` if status code is 2xx, `DOWN` otherwise
+- Overall status: `DOWN` if any component is `DOWN`, `UP` otherwise
+
+**Response example:**
+
+```json
+{
+  "status": "UP",
+  "components": {
+    "cpu": {
+      "status": "UP",
+      "details": {"percent": 25}
+    },
+    "memory": {
+      "status": "UP",
+      "details": {"percent": 50}
+    },
+    "diskSpace:root": {
+      "status": "UP",
+      "details": {"path": "/", "percent": 45}
+    },
+    "service:mongo": {
+      "status": "UP",
+      "details": {"status_code": 200, "response_time": 10}
+    },
+    "loadAverage": {
+      "status": "UP",
+      "details": {"one": 1.5, "five": 1.2, "fifteen": 1.0}
+    }
+  }
+}
+```
+
+### /status example
 
 ```
 $ sys-agent -v root:/ -s "s1:https://echo.umputun.com/s1" -s "s2:https://echo.umputun.com/s2?cron=*_9-18_*_*_*" \
