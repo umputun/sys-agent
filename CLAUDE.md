@@ -81,7 +81,9 @@ Config file structure mirrors CLI options with volumes and services definitions.
 ## API Endpoints
 
 - `GET /status` - Returns complete system and service status in JSON
+- `GET /actuator` - Actuator discovery endpoint with links to available endpoints
 - `GET /actuator/health` - Spring Boot Actuator compatible health status
+- `GET /actuator/health/{component}` - Health status of a specific component (e.g., cpu, memory, diskSpace:root)
 - `GET /ping` - Health check endpoint (returns "pong")
 
 The server includes middleware for:

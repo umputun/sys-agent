@@ -84,5 +84,28 @@ func (s *Rest) router() http.Handler {
 		rest.RenderJSON(w, health)
 	})
 
+	router.HandleFunc("GET /actuator/health/{component}", func(w http.ResponseWriter, r *http.Request) {
+		component := r.PathValue("component")
+		info, err := s.Status.Get()
+		if err != nil {
+			rest.SendErrorJSON(w, r, log.Default(), http.StatusInternalServerError, err, "failed to get status")
+			return
+		}
+		health := actuator.FromStatusInfo(info)
+		comp, ok := health.Components[component]
+		if !ok {
+			rest.SendErrorJSON(w, r, log.Default(), http.StatusNotFound, nil, "component not found")
+			return
+		}
+		if comp.Status == actuator.StatusDown {
+			w.WriteHeader(http.StatusServiceUnavailable)
+		}
+		rest.RenderJSON(w, comp)
+	})
+
+	router.HandleFunc("GET /actuator", func(w http.ResponseWriter, _ *http.Request) {
+		rest.RenderJSON(w, actuator.Discovery())
+	})
+
 	return router
 }
