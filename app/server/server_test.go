@@ -322,3 +322,23 @@ func TestActuatorHealthEndpoint_Error(t *testing.T) {
 	require.NoError(t, err)
 	assert.Contains(t, string(body), "failed to get status")
 }
+
+func TestActuatorHealthComponentEndpoint_Error(t *testing.T) {
+	sts := &StatusMock{
+		GetFunc: func() (*status.Info, error) {
+			return nil, assert.AnError
+		},
+	}
+	srv := Rest{Listen: "localhost:54009", Status: sts, Version: "v1"}
+	ts := httptest.NewServer(srv.router())
+	defer ts.Close()
+
+	resp, err := http.Get(ts.URL + "/actuator/health/cpu")
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+
+	body, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	assert.Contains(t, string(body), "failed to get status")
+}

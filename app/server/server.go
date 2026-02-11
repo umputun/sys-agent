@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -94,7 +95,7 @@ func (s *Rest) router() http.Handler {
 		health := actuator.FromStatusInfo(info)
 		comp, ok := health.Components[component]
 		if !ok {
-			rest.SendErrorJSON(w, r, log.Default(), http.StatusNotFound, nil, "component not found")
+			rest.SendErrorJSON(w, r, log.Default(), http.StatusNotFound, fmt.Errorf("component %q not found", component), "component not found")
 			return
 		}
 		if comp.Status == actuator.StatusDown {
