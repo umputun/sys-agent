@@ -160,6 +160,149 @@ func TestActuatorHealthEndpoint_Down(t *testing.T) {
 	assert.Equal(t, "DOWN", health.Components["cpu"].Status)
 }
 
+func TestActuatorHealthComponentEndpoint(t *testing.T) {
+	sts := &StatusMock{
+		GetFunc: func() (*status.Info, error) {
+			info := &status.Info{
+				CPUPercent: 25,
+				MemPercent: 50,
+				Volumes:    map[string]status.Volume{"root": {Name: "root", Path: "/", UsagePercent: 45}},
+				ExtServices: map[string]external.Response{
+					"mongo": {Name: "mongo", StatusCode: 200, ResponseTime: 10},
+				},
+			}
+			info.Loads.One = 1.5
+			info.Loads.Five = 1.2
+			info.Loads.Fifteen = 1.0
+			return info, nil
+		},
+	}
+	srv := Rest{Listen: "localhost:54009", Status: sts, Version: "v1"}
+	ts := httptest.NewServer(srv.router())
+	defer ts.Close()
+
+	t.Run("cpu component", func(t *testing.T) {
+		resp, err := http.Get(ts.URL + "/actuator/health/cpu")
+		require.NoError(t, err)
+		defer resp.Body.Close()
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var comp actuator.Component
+		err = json.NewDecoder(resp.Body).Decode(&comp)
+		require.NoError(t, err)
+		assert.Equal(t, "UP", comp.Status)
+		assert.InDelta(t, 25, comp.Details["percent"], 0.001)
+	})
+
+	t.Run("memory component", func(t *testing.T) {
+		resp, err := http.Get(ts.URL + "/actuator/health/memory")
+		require.NoError(t, err)
+		defer resp.Body.Close()
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var comp actuator.Component
+		err = json.NewDecoder(resp.Body).Decode(&comp)
+		require.NoError(t, err)
+		assert.Equal(t, "UP", comp.Status)
+		assert.InDelta(t, 50, comp.Details["percent"], 0.001)
+	})
+
+	t.Run("disk component", func(t *testing.T) {
+		resp, err := http.Get(ts.URL + "/actuator/health/diskSpace:root")
+		require.NoError(t, err)
+		defer resp.Body.Close()
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var comp actuator.Component
+		err = json.NewDecoder(resp.Body).Decode(&comp)
+		require.NoError(t, err)
+		assert.Equal(t, "UP", comp.Status)
+		assert.Equal(t, "/", comp.Details["path"])
+		assert.InDelta(t, 45, comp.Details["percent"], 0.001)
+	})
+
+	t.Run("service component", func(t *testing.T) {
+		resp, err := http.Get(ts.URL + "/actuator/health/service:mongo")
+		require.NoError(t, err)
+		defer resp.Body.Close()
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var comp actuator.Component
+		err = json.NewDecoder(resp.Body).Decode(&comp)
+		require.NoError(t, err)
+		assert.Equal(t, "UP", comp.Status)
+		assert.InDelta(t, 200, comp.Details["status_code"], 0.001)
+	})
+
+	t.Run("load average component", func(t *testing.T) {
+		resp, err := http.Get(ts.URL + "/actuator/health/loadAverage")
+		require.NoError(t, err)
+		defer resp.Body.Close()
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var comp actuator.Component
+		err = json.NewDecoder(resp.Body).Decode(&comp)
+		require.NoError(t, err)
+		assert.Equal(t, "UP", comp.Status)
+		assert.InDelta(t, 1.5, comp.Details["one"], 0.001)
+	})
+
+	t.Run("unknown component returns 404", func(t *testing.T) {
+		resp, err := http.Get(ts.URL + "/actuator/health/unknown")
+		require.NoError(t, err)
+		defer resp.Body.Close()
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	})
+}
+
+func TestActuatorHealthComponentEndpoint_Down(t *testing.T) {
+	sts := &StatusMock{
+		GetFunc: func() (*status.Info, error) {
+			info := &status.Info{
+				CPUPercent: 95,
+				MemPercent: 50,
+			}
+			info.Loads.One = 1.0
+			info.Loads.Five = 1.0
+			info.Loads.Fifteen = 1.0
+			return info, nil
+		},
+	}
+	srv := Rest{Listen: "localhost:54009", Status: sts, Version: "v1"}
+	ts := httptest.NewServer(srv.router())
+	defer ts.Close()
+
+	resp, err := http.Get(ts.URL + "/actuator/health/cpu")
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusServiceUnavailable, resp.StatusCode, "should return 503 when component is DOWN")
+
+	var comp actuator.Component
+	err = json.NewDecoder(resp.Body).Decode(&comp)
+	require.NoError(t, err)
+	assert.Equal(t, "DOWN", comp.Status)
+}
+
+func TestActuatorDiscoveryEndpoint(t *testing.T) {
+	srv := Rest{Listen: "localhost:54009", Version: "v1"}
+	ts := httptest.NewServer(srv.router())
+	defer ts.Close()
+
+	resp, err := http.Get(ts.URL + "/actuator")
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var discovery actuator.DiscoveryResponse
+	err = json.NewDecoder(resp.Body).Decode(&discovery)
+	require.NoError(t, err)
+
+	require.Contains(t, discovery.Links, "self")
+	assert.Equal(t, "/actuator", discovery.Links["self"].Href)
+	require.Contains(t, discovery.Links, "health")
+	assert.Equal(t, "/actuator/health", discovery.Links["health"].Href)
+}
+
 func TestActuatorHealthEndpoint_Error(t *testing.T) {
 	sts := &StatusMock{
 		GetFunc: func() (*status.Info, error) {
@@ -171,6 +314,26 @@ func TestActuatorHealthEndpoint_Error(t *testing.T) {
 	defer ts.Close()
 
 	resp, err := http.Get(ts.URL + "/actuator/health")
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+
+	body, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	assert.Contains(t, string(body), "failed to get status")
+}
+
+func TestActuatorHealthComponentEndpoint_Error(t *testing.T) {
+	sts := &StatusMock{
+		GetFunc: func() (*status.Info, error) {
+			return nil, assert.AnError
+		},
+	}
+	srv := Rest{Listen: "localhost:54009", Status: sts, Version: "v1"}
+	ts := httptest.NewServer(srv.router())
+	defer ts.Close()
+
+	resp, err := http.Get(ts.URL + "/actuator/health/cpu")
 	require.NoError(t, err)
 	defer resp.Body.Close()
 	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)

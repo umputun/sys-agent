@@ -219,3 +219,13 @@ func TestFromStatusInfo_ComponentStatusDown(t *testing.T) {
 	// load average is always UP (informational only)
 	assert.Equal(t, StatusUp, result.Components["loadAverage"].Status)
 }
+
+func TestDiscovery(t *testing.T) {
+	result := Discovery()
+	require.NotNil(t, result)
+	require.NotNil(t, result.Links)
+
+	assert.Equal(t, "/actuator", result.Links["self"].Href)
+	assert.Equal(t, "/actuator/health", result.Links["health"].Href)
+	assert.Len(t, result.Links, 2)
+}

@@ -418,7 +418,9 @@ example: `https://example.com/s1?cron=0_7-18_*_*_*`
 ## API
 
  - `GET /status` - returns server status in JSON format
+ - `GET /actuator` - returns actuator discovery with links to available endpoints
  - `GET /actuator/health` - returns Spring Boot Actuator compatible health status
+ - `GET /actuator/health/{component}` - returns health status of a specific component
  - `GET /ping` - returns `pong`
 
 ### /actuator/health endpoint
@@ -456,6 +458,36 @@ The `/actuator/health` endpoint provides Spring Boot Actuator compatible health 
       "status": "UP",
       "details": {"one": 1.5, "five": 1.2, "fifteen": 1.0}
     }
+  }
+}
+```
+
+### /actuator/health/{component} endpoint
+
+Drill down into individual component health by name. Component names match the keys in the `/actuator/health` response (e.g., `cpu`, `memory`, `diskSpace:root`, `service:mongo`, `loadAverage`).
+
+Returns 404 if the component is not found, 503 if the component status is DOWN.
+
+**Response example** (`GET /actuator/health/cpu`):
+
+```json
+{
+  "status": "UP",
+  "details": {"percent": 25}
+}
+```
+
+### /actuator endpoint
+
+The base `/actuator` endpoint returns links to available actuator sub-endpoints.
+
+**Response example:**
+
+```json
+{
+  "_links": {
+    "self": {"href": "/actuator"},
+    "health": {"href": "/actuator/health"}
   }
 }
 ```

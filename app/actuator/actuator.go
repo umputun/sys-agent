@@ -110,3 +110,23 @@ func FromStatusInfo(info *status.Info) *HealthResponse {
 
 	return resp
 }
+
+// DiscoveryResponse represents the actuator discovery endpoint response with links to available endpoints
+type DiscoveryResponse struct {
+	Links map[string]Link `json:"_links"`
+}
+
+// Link represents a single HAL-style link
+type Link struct {
+	Href string `json:"href"`
+}
+
+// Discovery returns the actuator discovery response listing available endpoints
+func Discovery() *DiscoveryResponse {
+	return &DiscoveryResponse{
+		Links: map[string]Link{
+			"self":   {Href: "/actuator"},
+			"health": {Href: "/actuator/health"},
+		},
+	}
+}
