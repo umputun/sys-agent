@@ -42,6 +42,7 @@ archives:
     files:
       - LICENSE
       - README.md
+      - completions/*
     rlcp: true
 
 
@@ -60,6 +61,10 @@ brews:
     homepage: "https://sys-agent.umputun.dev"
     description: "SysAgent is a simple service reporting server status via HTTP GET request. It is useful for monitoring and debugging purposes, but usually used as a part of some other monitoring system collecting data and serving it."
     license: "MIT"
+    extra_install: |
+      bash_completion.install "completions/sys-agent.bash" => "sys-agent"
+      zsh_completion.install "completions/sys-agent.zsh" => "_sys-agent"
+      fish_completion.install "completions/sys-agent.fish" => "sys-agent.fish"
 
 nfpms:
   - id: sys-agent
@@ -80,4 +85,10 @@ nfpms:
     contents:
       - src: sys-agent.service
         dst: /etc/systemd/system/sys-agent.service
+      - src: completions/sys-agent.bash
+        dst: /usr/share/bash-completion/completions/sys-agent
+      - src: completions/sys-agent.zsh
+        dst: /usr/share/zsh/vendor-completions/_sys-agent
+      - src: completions/sys-agent.fish
+        dst: /usr/share/fish/vendor_completions.d/sys-agent.fish
 

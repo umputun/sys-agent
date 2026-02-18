@@ -37,7 +37,9 @@ var opts struct {
 }
 
 func main() {
-	fmt.Printf("sys-agent %s\n", revision)
+	if os.Getenv("GO_FLAGS_COMPLETION") == "" {
+		fmt.Printf("sys-agent %s\n", revision)
+	}
 
 	p := flags.NewParser(&opts, flags.PassDoubleDash|flags.HelpFlag)
 	if _, err := p.Parse(); err != nil {
