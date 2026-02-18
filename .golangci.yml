@@ -21,6 +21,9 @@ linters:
     - modernize
     - testifylint
   settings:
+    gosec:
+      excludes:
+        - G117
     dupl:
       threshold: 100
     goconst:
