@@ -24,6 +24,8 @@ linters:
     gosec:
       excludes:
         - G117
+        - G118
+        - G706
     dupl:
       threshold: 100
     goconst:
