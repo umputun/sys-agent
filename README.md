@@ -31,7 +31,7 @@ Application Options:
   -s, --service= services to report [$SERVICES]  
       --concurrency= number of concurrent requests to services (default: 4) [$CONCURRENCY]
       --timeout= timeout for each request to services (default: 5s) [$TIMEOUT]
-      --docker-api=  docker API version (default: 1.24) [$DOCKER_API]
+      --docker-api= docker API version (default: 1.24) [$DOCKER_API]
       --dbg     show debug info [$DEBUG]
 
 Help Options:
