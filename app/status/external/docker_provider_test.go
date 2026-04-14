@@ -17,7 +17,7 @@ func TestDockerProvider_Status(t *testing.T) {
 	ts := httptest.NewServer(
 		http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-				assert.Equal(t, "/v1.24/containers/json", r.URL.Path)
+				assert.Equal(t, "/v1.22/containers/json", r.URL.Path)
 				time.Sleep(time.Millisecond * 10)
 				w.WriteHeader(http.StatusOK)
 				data, err := os.ReadFile("testdata/containers.json")
@@ -28,8 +28,9 @@ func TestDockerProvider_Status(t *testing.T) {
 			},
 		),
 	)
+	defer ts.Close()
 
-	p := DockerProvider{TimeOut: time.Second}
+	p := DockerProvider{TimeOut: time.Second, APIVersion: "1.22"}
 	resp, err := p.Status(Request{Name: "d1", URL: strings.Replace(ts.URL, "http://", "tcp://", 1)})
 	require.NoError(t, err)
 	assert.Equal(t, 200, resp.StatusCode)
@@ -40,7 +41,7 @@ func TestDockerProvider_StatusWithRequired(t *testing.T) {
 	ts := httptest.NewServer(
 		http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-				assert.Equal(t, "/v1.24/containers/json", r.URL.Path)
+				assert.Equal(t, "/v1.22/containers/json", r.URL.Path)
 				time.Sleep(time.Millisecond * 10)
 				w.WriteHeader(http.StatusOK)
 				data, err := os.ReadFile("testdata/containers.json")
@@ -51,8 +52,9 @@ func TestDockerProvider_StatusWithRequired(t *testing.T) {
 			},
 		),
 	)
+	defer ts.Close()
 
-	p := DockerProvider{TimeOut: time.Second}
+	p := DockerProvider{TimeOut: time.Second, APIVersion: "1.22"}
 
 	{
 		resp, err := p.Status(
@@ -69,6 +71,27 @@ func TestDockerProvider_StatusWithRequired(t *testing.T) {
 		assert.Equal(t, 200, resp.StatusCode)
 		assert.Equal(t, "ok", resp.Body["required"])
 	}
+}
+
+func TestDockerProvider_StatusDefaultAPIVersion(t *testing.T) {
+	ts := httptest.NewServer(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, "/v1.24/containers/json", r.URL.Path)
+				w.WriteHeader(http.StatusOK)
+				data, err := os.ReadFile("testdata/containers.json")
+				assert.NoError(t, err)
+				_, e := w.Write(data)
+				assert.NoError(t, e)
+			},
+		),
+	)
+	defer ts.Close()
+
+	p := DockerProvider{TimeOut: time.Second} // no APIVersion set, should default to "1.24"
+	resp, err := p.Status(Request{Name: "d1", URL: strings.Replace(ts.URL, "http://", "tcp://", 1)})
+	require.NoError(t, err)
+	assert.Equal(t, 200, resp.StatusCode)
 }
 
 func TestDockerProvider_parseDockerResponse(t *testing.T) {

@@ -32,8 +32,9 @@ var opts struct {
 	Services []string      `short:"s" long:"service" env:"SERVICES" env-delim:"," description:"services to report"`
 	TimeOut  time.Duration `long:"timeout" env:"TIMEOUT" default:"5s" description:"timeout for each request to services"`
 
-	Concurrency int  `long:"concurrency" env:"CONCURRENCY" default:"4" description:"number of concurrent requests to services"`
-	Dbg         bool `long:"dbg" env:"DEBUG" description:"show debug info"`
+	Concurrency      int    `long:"concurrency" env:"CONCURRENCY" default:"4" description:"number of concurrent requests to services"`
+	DockerAPIVersion string `long:"docker-api" env:"DOCKER_API" default:"1.24" description:"docker API version"`
+	Dbg              bool   `long:"dbg" env:"DEBUG" description:"show debug info"`
 }
 
 func main() {
@@ -85,7 +86,7 @@ func main() {
 	providers := external.Providers{
 		HTTP:        &external.HTTPProvider{Client: http.Client{Timeout: opts.TimeOut}},
 		Mongo:       &external.MongoProvider{TimeOut: opts.TimeOut},
-		Docker:      &external.DockerProvider{TimeOut: opts.TimeOut},
+		Docker:      &external.DockerProvider{TimeOut: opts.TimeOut, APIVersion: opts.DockerAPIVersion},
 		Program:     &external.ProgramProvider{TimeOut: opts.TimeOut, WithShell: true},
 		Nginx:       &external.NginxProvider{TimeOut: opts.TimeOut},
 		Certificate: &external.CertificateProvider{TimeOut: opts.TimeOut},

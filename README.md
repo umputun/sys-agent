@@ -30,7 +30,8 @@ Application Options:
   -v, --volume= volumes to report (default: root:/) [$VOLUMES]
   -s, --service= services to report [$SERVICES]  
       --concurrency= number of concurrent requests to services (default: 4) [$CONCURRENCY]
-      --timeout= timeout for each request to services (default: 5s) [$TIMEOUT] 
+      --timeout= timeout for each request to services (default: 5s) [$TIMEOUT]
+      --docker-api=  docker API version (default: 1.24) [$DOCKER_API]
       --dbg     show debug info [$DEBUG]
 
 Help Options:
@@ -44,6 +45,7 @@ Help Options:
 * services (`--service`, can be repeated) is a list of name:url pairs, where name is a name of the service, and url is a url to the service. Supports `http`, `https`, `mongodb` and `docker` schemes. The response for each service will be in `services` field.
 * concurrency (`--concurrency`) is a number of concurrent requests to services.
 * timeout (`--timeout`) is a timeout for each request to services.
+* docker-api (`--docker-api`) is a docker engine API version. The default is `1.24`, which works with Docker 1.12+. For newer Docker engines that dropped support for older API versions (e.g., Docker 28+ requires at least `1.44`), set this to the minimum supported version.
 * config file (`--config`, `-f`) is a path to the config file, see below for details.
 
 ## configuration file 
@@ -624,6 +626,7 @@ services:
       - LISTEN=0.0.0.0:8080
       - VOLUMES=home:/hosthome,root:/hostroot
       - SERVICES=health:http://172.17.42.1/health,docker:docker:///var/run/docker.sock
+      # - DOCKER_API=1.44  # set for Docker 28+ which requires API version 1.44+
 
 ```
 

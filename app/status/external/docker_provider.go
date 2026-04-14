@@ -13,11 +13,10 @@ import (
 	"time"
 )
 
-const dockerClientVersion = "1.24"
-
 // DockerProvider is a status provider that uses docker
 type DockerProvider struct {
-	TimeOut time.Duration
+	TimeOut    time.Duration
+	APIVersion string // docker API version, default "1.24"
 }
 
 // Status the url looks like: docker:///var/run/docker.sock or docker://1.2.3.4:2375
@@ -48,7 +47,11 @@ func (d *DockerProvider) Status(req Request) (*Response, error) {
 		Timeout: d.TimeOut,
 	}
 
-	dkURL := fmt.Sprintf("http://localhost/v%s/containers/json", dockerClientVersion)
+	apiVersion := d.APIVersion
+	if apiVersion == "" {
+		apiVersion = "1.24"
+	}
+	dkURL := fmt.Sprintf("http://localhost/v%s/containers/json", apiVersion)
 	resp, err := client.Get(dkURL)
 	if err != nil {
 		return nil, fmt.Errorf("docker request failed: %s %s: %w", req.Name, req.URL, err)
