@@ -440,12 +440,12 @@ Exports (justification per item: who outside the package calls this?):
 - Modify: `app/status/external/mongo_provider.go`
 - Modify: `app/status/external/mongo_provider_test.go`
 
-- [ ] write a failing test passing `count` templates that panic today: `{"date": "[[.YYYYMMDD"}` and `[[ .YYYYMMDD | nosuchfunc ]]`
-- [ ] write a failing test for `[[.Nope]]`, an Execute error that today logs a WARN and returns the partially-rendered string, producing a broken BSON filter
-- [ ] change `DayTemplate.Parse` (`mongo_provider.go:293`) to return `(string, error)` for both failure modes, and update its godoc, which currently says "Parse translate template to final string"
-- [ ] update the `countQuery` call site at `mongo_provider.go:191-197` to propagate the error
-- [ ] add a test asserting a valid template still expands to the documented `{"$date":...}` form, so the shape is not changed
-- [ ] run tests - must pass before task 10
+- [x] write a failing test passing `count` templates that panic today: `{"date": "[[.YYYYMMDD"}` and `[[ .YYYYMMDD | nosuchfunc ]]`
+- [x] write a failing test for `[[.Nope]]`, an Execute error that today logs a WARN and returns the partially-rendered string, producing a broken BSON filter
+- [x] change `DayTemplate.Parse` (`mongo_provider.go:293`) to return `(string, error)` for both failure modes, and update its godoc, which currently says "Parse translate template to final string"
+- [x] update the `countQuery` call site at `mongo_provider.go:191-197` to propagate the error
+- [x] add a test asserting a valid template still expands to the documented `{"$date":...}` form, so the shape is not changed
+- [x] run tests - must pass before task 10
 
 ### Task 10: Remove the shared-provider clock race in the mongo provider
 
