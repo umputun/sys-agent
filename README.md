@@ -371,7 +371,9 @@ Templates use the process-local timezone, controlled by `TZ`. Atomic fields can 
 
 An exact-day template reports `not found` after midnight until that day's artifact appears. If the goal is freshness without this window, use a date-free glob and evaluate `since_modif` for the newest match.
 
-Targets follow URL percent-encoding rules. Encode `?` as `%3F` to use the single-character glob wildcard, `#` as `%23`, and spaces as `%20`. A raw `?` starts the query, a raw `#` is rejected as a fragment, and a bare `%` is invalid.
+Targets follow URL percent-encoding rules. Encode `?` as `%3F` to use the single-character glob wildcard, `#` as `%23`, and spaces as `%20`. A raw `?` starts the query, a raw `#` is rejected as a fragment, and a bare `%` is invalid. YAML `path` values are encoded automatically.
+
+Decoded `*`, `?`, and `[` characters use filepath glob syntax. An existing filename containing these characters is no longer treated as an exact path. Prefix a relative target with `./` when its first segment contains `@`, since provider URLs reject userinfo.
 
 Response example:
 

@@ -109,7 +109,8 @@ Each external service provider uses specific URL format:
 - RMQ: `name:rmq://user:pass@host:15672/vhost/queue`
 
 Providers support `cron` query parameter for scheduled checks.
-Program and file targets use URL percent encoding. Encode `?` as `%3F` inside a path and `#` as `%23`.
+Program targets use URL percent encoding for reserved path characters. File targets decode `%3F` to the `?` glob wildcard and `%23` to a literal `#`; decoded `*`, `?`, and `[` characters use filepath glob syntax.
+Prefix a relative target with `./` when its first path segment contains `@`, since provider URLs reject userinfo.
 
 ## Dependencies
 
