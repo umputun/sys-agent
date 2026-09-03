@@ -395,14 +395,14 @@ Exports (justification per item: who outside the package calls this?):
 - Modify: `app/config/config.go`
 - Modify: `app/config/config_test.go`
 
-- [ ] write a failing round-trip test that stays inside package `config`: take the string `MarshalServices` emits and decode it with `net/url`, asserting `u.Query()["args"]` is exactly `["arg1", "arg2"]` — `parseTarget` is unexported in package `external` and cannot be called from here
-- [ ] add cases for an argument containing a space and one containing `&`, to pin escaping
-- [ ] replace the `?args="` + join + `"` construction at `config.go:176-182` with repeated escaped `args=` pairs built through `url.Values`
-- [ ] add a case for a program entry with no args, asserting no `?args=` is emitted
-- [ ] write a failing test for defect 11: a mongo entry with `count_query` set must produce a URL whose `count` parameter carries it — `config.go:162` emits `countQuery=` while `mongo_provider.go:192` reads `count`, so the YAML field is silently ignored today
-- [ ] write a failing test for defect 12: a mongo entry with `collection` and `db` but no `oplog_max_delta` must produce a parseable query — `config.go:155-164` appends `&collection=` without ensuring a `?` exists, yielding `mongodb://host/db&collection=x` with the query inside the path
-- [ ] rebuild the mongo branch's query through `url.Values` so the separator is correct by construction rather than by a `strings.Contains(m, "?")` check
-- [ ] run tests - must pass before task 7
+- [x] write a failing round-trip test that stays inside package `config`: take the string `MarshalServices` emits and decode it with `net/url`, asserting `u.Query()["args"]` is exactly `["arg1", "arg2"]` — `parseTarget` is unexported in package `external` and cannot be called from here
+- [x] add cases for an argument containing a space and one containing `&`, to pin escaping
+- [x] replace the `?args="` + join + `"` construction at `config.go:176-182` with repeated escaped `args=` pairs built through `url.Values`
+- [x] add a case for a program entry with no args, asserting no `?args=` is emitted
+- [x] write a failing test for defect 11: a mongo entry with `count_query` set must produce a URL whose `count` parameter carries it — `config.go:162` emits `countQuery=` while `mongo_provider.go:192` reads `count`, so the YAML field is silently ignored today
+- [x] write a failing test for defect 12: a mongo entry with `collection` and `db` but no `oplog_max_delta` must produce a parseable query — `config.go:155-164` appends `&collection=` without ensuring a `?` exists, yielding `mongodb://host/db&collection=x` with the query inside the path
+- [x] rebuild the mongo branch's query through `url.Values` so the separator is correct by construction rather than by a `strings.Contains(m, "?")` check
+- [x] run tests - must pass before task 7
 
 ### Task 7: Strip query strings in the file and certificate providers
 
