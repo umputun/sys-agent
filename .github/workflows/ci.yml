@@ -35,8 +35,8 @@ jobs:
 
       - name: build and test
         run: |
-          go test -v -timeout=100s -covermode=count -coverprofile=$GITHUB_WORKSPACE/profile.cov_tmp ./...
-          cat $GITHUB_WORKSPACE/profile.cov_tmp | grep -v "mocks" | grep -v "_mock" > $GITHUB_WORKSPACE/profile.cov
+          go test -v -timeout=100s -covermode=count -coverprofile="$GITHUB_WORKSPACE/profile.cov_tmp" ./...
+          cat "$GITHUB_WORKSPACE/profile.cov_tmp" | grep -v "mocks" | grep -v "_mock" > "$GITHUB_WORKSPACE/profile.cov"
         working-directory: app
         env:
           TZ: "America/Chicago"
@@ -50,7 +50,7 @@ jobs:
       - name: submit coverage
         run: |
           go install github.com/mattn/goveralls@latest
-          goveralls -service="github" -coverprofile=$GITHUB_WORKSPACE/profile.cov
+          goveralls -service="github" -coverprofile="$GITHUB_WORKSPACE/profile.cov"
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -96,8 +96,8 @@ jobs:
         run: |
           ref="${GITHUB_REF#refs/*/}"
           ref="${ref//\//_}"
-          echo "ref=${ref}" >> $GITHUB_OUTPUT
-          echo "sha=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+          echo "ref=${ref}" >> "$GITHUB_OUTPUT"
+          echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
       - name: build and push to ghcr.io by digest
         id: build-ghcr
@@ -198,11 +198,11 @@ jobs:
         run: |
           ref="${GITHUB_REF#refs/*/}"
           ref="${ref//\//_}"
-          echo "ref=${ref}" >> $GITHUB_OUTPUT
+          echo "ref=${ref}" >> "$GITHUB_OUTPUT"
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            echo "is_tag=true" >> $GITHUB_OUTPUT
+            echo "is_tag=true" >> "$GITHUB_OUTPUT"
           else
-            echo "is_tag=false" >> $GITHUB_OUTPUT
+            echo "is_tag=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: create ghcr.io manifest and push
@@ -214,6 +214,8 @@ jobs:
           if [[ "$is_tag" == "true" ]]; then
             tags="${tags} -t ghcr.io/${{ github.actor }}/sys-agent:latest"
           fi
+          # intentional splitting expands tags and digest output into separate arguments
+          # shellcheck disable=SC2086,SC2046
           docker buildx imagetools create ${tags} \
             $(printf 'ghcr.io/${{ github.actor }}/sys-agent@sha256:%s ' *)
 
@@ -226,5 +228,7 @@ jobs:
           if [[ "$is_tag" == "true" ]]; then
             tags="${tags} -t docker.io/${{ github.actor }}/sys-agent:latest"
           fi
+          # intentional splitting expands tags and digest output into separate arguments
+          # shellcheck disable=SC2086,SC2046
           docker buildx imagetools create ${tags} \
             $(printf 'docker.io/${{ github.actor }}/sys-agent@sha256:%s ' *)
