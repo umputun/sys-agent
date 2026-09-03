@@ -334,11 +334,13 @@ Validation: `go mod verify`, `go test -mod=vendor ./...`, `go test -race ./...` 
 - Modify: `.github/workflows/release.yml`
 - Modify: `.github/workflows/ci-site.yml`
 
-- [ ] bump `actions/checkout@v6` to `@v7` in all three workflows
-- [ ] bump `actions/setup-go@v6` to `@v7` in `ci.yml` and `release.yml`
-- [ ] confirm the remaining actions are already current (`golangci-lint-action@v9`, `upload-artifact@v7`, `download-artifact@v8`, all four `docker/*`)
-- [ ] validate locally with `actionlint` — remote CI cannot gate this task, since nothing is pushed until Eugene approves a push
-- [ ] run the suite and linter — must pass before task 4
+Validation: actionlint 1.7.12 passes with only the existing empty trigger and shellcheck categories ignored. Its full run reports those pre-existing findings and no version-tag issue. The race suite with MongoDB and golangci-lint 2.13.2 also pass.
+
+- [x] bump `actions/checkout@v6` to `@v7` in all three workflows
+- [x] bump `actions/setup-go@v6` to `@v7` in `ci.yml` and `release.yml`
+- [x] confirm the remaining actions are already current (`golangci-lint-action@v9`, `upload-artifact@v7`, `download-artifact@v8`, all four `docker/*`)
+- [x] validate locally with `actionlint` — remote CI cannot gate this task, since nothing is pushed until Eugene approves a push
+- [x] run the suite and linter — must pass before task 4
 
 ### Task 4: Add the shared provider target parser
 
