@@ -1,6 +1,6 @@
 module github.com/umputun/sys-agent
 
-go 1.25.0
+go 1.27.0
 
 require (
 	github.com/didip/tollbooth/v8 v8.0.1

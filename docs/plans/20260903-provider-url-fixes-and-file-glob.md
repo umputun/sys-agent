@@ -294,13 +294,19 @@ needs a release dry-run, so it is deliberately out of scope here.
 - Modify: `go.mod`
 - Modify: `.github/workflows/ci.yml`
 - Modify: `.github/workflows/release.yml`
+- Modify: `app/main.go`
+- Modify: `app/status/external/http_provider_test.go`
 
-- [ ] record the pre-change baseline: `go test -cover ./app/... | tee` the result into this task's notes, so Task 12's coverage check is decidable
-- [ ] set the `go` directive in `go.mod` to `1.27.0`
-- [ ] set `go-version: "1.27"` in `ci.yml:33` and `release.yml:24`, and rename the ci step label at `ci.yml:30`
-- [ ] leave `release.yml:29` `version: ~> 1.25` untouched — it selects GoReleaser, not Go
-- [ ] run `docker build .` to confirm `umputun/baseimage:buildgo-latest` satisfies the new directive
-- [ ] run `go test ./... -race` and `golangci-lint run --max-issues-per-linter=0 --max-same-issues=0` — must pass before task 2
+Baseline with Go 1.25.0: `app` 75.9%, `actuator` 100.0%, `config` 98.4%, `server` 93.1%, `status` 70.3%, and `status/external` 85.9%.
+
+Validation: `docker build .`, `go test ./... -race` with MongoDB, formatter checks, and golangci-lint 2.13.2 built with Go 1.27.0 passed. The Go 1.27 `embedlit` modernization required updates to three embedded `http.Client` literals.
+
+- [x] record the pre-change baseline: `go test -cover ./app/... | tee` the result into this task's notes, so Task 12's coverage check is decidable
+- [x] set the `go` directive in `go.mod` to `1.27.0`
+- [x] set `go-version: "1.27"` in `ci.yml:33` and `release.yml:24`, and rename the ci step label at `ci.yml:30`
+- [x] leave `release.yml:29` `version: ~> 1.25` untouched — it selects GoReleaser, not Go
+- [x] run `docker build .` to confirm `umputun/baseimage:buildgo-latest` satisfies the new directive
+- [x] run `go test ./... -race` and `golangci-lint run --max-issues-per-linter=0 --max-same-issues=0` — must pass before task 2
 
 ### Task 2: Refresh modules within current majors
 
