@@ -453,10 +453,10 @@ Exports (justification per item: who outside the package calls this?):
 - Modify: `app/status/external/mongo_provider.go`
 - Modify: `app/status/external/mongo_provider_test.go`
 
-- [ ] write a failing concurrency regression: call `Status` on one `*MongoProvider` from two goroutines and run it under `-race`, since `main.go:88` creates a single instance shared by every mongo service and `service.go:95` runs them concurrently
-- [ ] replace the unsynchronized `m.now = time.Now` write at `mongo_provider.go:36-38` with a read-only accessor treating nil as `time.Now`, mirroring the `clock()` shape Task 11 uses for the file provider
-- [ ] confirm the existing tests that inject `now` still work through the accessor
-- [ ] run tests under `-race` - must pass before task 11
+- [x] write a failing concurrency regression: call `Status` on one `*MongoProvider` from two goroutines and run it under `-race`, since `main.go:88` creates a single instance shared by every mongo service and `service.go:95` runs them concurrently
+- [x] replace the unsynchronized `m.now = time.Now` write at `mongo_provider.go:36-38` with a read-only accessor treating nil as `time.Now`, mirroring the `clock()` shape Task 11 uses for the file provider
+- [x] confirm the existing tests that inject `now` still work through the accessor
+- [x] run tests under `-race` - must pass before task 11
 
 ### Task 11: Add glob and date-template resolution to the file provider
 

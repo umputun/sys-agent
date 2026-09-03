@@ -25,6 +25,13 @@ type MongoProvider struct {
 	now func() time.Time // for testing
 }
 
+func (m *MongoProvider) clock() time.Time {
+	if m.now != nil {
+		return m.now()
+	}
+	return time.Now()
+}
+
 // Status returns status of mongo, checks if connection established and ping is ok
 // request URL looks like mongo:mongodb://172.17.42.1:27017/test?oplogMaxDelta=30m
 // oplogMaxDelta is optional, if set, checks if oplog is not too far behind
@@ -32,10 +39,6 @@ func (m *MongoProvider) Status(req Request) (*Response, error) {
 	st := time.Now()
 	ctx, cancel := context.WithTimeout(context.Background(), m.TimeOut)
 	defer cancel()
-
-	if m.now == nil {
-		m.now = time.Now
-	}
 
 	client, _, err := mongo.Connect(ctx, mopt.Client().SetAppName("sys-agent").SetConnectTimeout(m.TimeOut), req.URL)
 	if err != nil {
@@ -193,7 +196,7 @@ func (m *MongoProvider) countQuery(ctx context.Context, client *mdrv.Client, req
 	if countQuery == "" {
 		return -1, nil // no count filter requested
 	}
-	dt := NewDayTemplate(m.now())
+	dt := NewDayTemplate(m.clock())
 	countQuery, err := dt.Parse(countQuery)
 	if err != nil {
 		return 0, fmt.Errorf("mongo count query template failed: %w", err)

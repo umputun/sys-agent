@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"sync"
 	"testing"
 	"time"
 
@@ -34,6 +35,26 @@ func TestMongoProvider_Status(t *testing.T) {
 		_, err := p.Status(Request{Name: "test", URL: "mongodb://localhost:27000"})
 		require.Error(t, err)
 	})
+}
+
+func TestMongoProvider_StatusConcurrent(t *testing.T) {
+	p := &MongoProvider{TimeOut: time.Second}
+	start := make(chan struct{})
+	errs := make(chan error, 2)
+	var wg sync.WaitGroup
+	for range 2 {
+		wg.Go(func() {
+			<-start
+			_, err := p.Status(Request{Name: "test", URL: "mongodb://localhost:27017"})
+			errs <- err
+		})
+	}
+	close(start)
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		require.NoError(t, err)
+	}
 }
 
 func TestMongoProvider_parseReplStatus(t *testing.T) {
