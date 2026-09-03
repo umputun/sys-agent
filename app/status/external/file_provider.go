@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"sync"
 	"time"
 )
@@ -29,7 +28,10 @@ func (f *FileProvider) Status(req Request) (*Response, error) {
 
 	st := time.Now()
 
-	fname := strings.TrimPrefix(req.URL, "file://")
+	fname, _, err := parseTarget(req.URL, "file")
+	if err != nil {
+		return nil, fmt.Errorf("file URL parse failed: %s %s: %w", req.Name, req.URL, err)
+	}
 	fi, err := os.Stat(fname)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return nil, fmt.Errorf("file stat failed: %s %s: %w", req.Name, fname, err)

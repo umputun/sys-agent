@@ -70,4 +70,29 @@ func TestFileProvider_Status(t *testing.T) {
 		t.Logf("%+v", resp)
 		assert.Equal(t, "not found", resp.Body["status"])
 	}
+
+	t.Run("cron query is not part of path", func(t *testing.T) {
+		resp, err := p.Status(Request{Name: "r1", URL: "file://" + fname + "?cron=0_6_*_*_*"})
+		require.NoError(t, err)
+		assert.Equal(t, "found", resp.Body["status"])
+		assert.Equal(t, "pong 1234567890", resp.Body["content"])
+	})
+
+	t.Run("relative path", func(t *testing.T) {
+		resp, err := p.Status(Request{Name: "r1", URL: "file://testdata/ping.txt"})
+		require.NoError(t, err)
+		assert.Equal(t, "found", resp.Body["status"])
+		assert.Equal(t, "pong", resp.Body["content"])
+	})
+
+	t.Run("invalid percent", func(t *testing.T) {
+		_, err := p.Status(Request{Name: "bad", URL: "file:///tmp/50%_done.txt"})
+		require.ErrorContains(t, err, "invalid URL escape")
+
+		service := NewService(Providers{File: &p}, 1, "bad:file:///tmp/50%_done.txt")
+		responses := service.Status()
+		require.Len(t, responses, 1)
+		assert.Equal(t, 500, responses[0].StatusCode)
+		assert.Nil(t, responses[0].Body)
+	})
 }

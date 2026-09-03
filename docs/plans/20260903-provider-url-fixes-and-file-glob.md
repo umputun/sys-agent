@@ -412,13 +412,13 @@ Exports (justification per item: who outside the package calls this?):
 - Modify: `app/status/external/file_provider_test.go`
 - Modify: `app/status/external/certificate_provider_test.go`
 
-- [ ] write a failing test pinning that `file:///tmp/x.txt?cron=0_6_*_*_*` stats `/tmp/x.txt`
-- [ ] cover the cert dial target purely in the Task 4 `parseTarget` tests — the provider hardcodes `+ ":443"` so no test listener can be targeted, and no new live-network test is added
-- [ ] write a failing test pinning that `body["host"]` carries no query, by extending the inherited `TestCertificateProvider_Status` (`certificate_provider_test.go:13`, which already dials `umputun.com`) with a `cert://umputun.com?cron=0_6_*_*_*` case asserting `body["host"] == "https://umputun.com"`: `certificate_provider.go:40` derives it a second time from the raw `req.URL`, so fixing only the dial leaves the query in the reported host
-- [ ] replace the `TrimPrefix` at `file_provider.go:32` and both raw-URL uses in `certificate_provider.go` (`:18` and `:40`) with `parseTarget`
-- [ ] keep the relative-path form working — `file://foo/bar.txt` must still resolve to `foo/bar.txt`
-- [ ] add a test pinning that a bare `%` in a target now returns an error rather than a literal path, and confirm it surfaces as a 500 with no body per `service.go:146`
-- [ ] run tests - must pass before task 8
+- [x] write a failing test pinning that `file:///tmp/x.txt?cron=0_6_*_*_*` stats `/tmp/x.txt`
+- [x] cover the cert dial target purely in the Task 4 `parseTarget` tests — the provider hardcodes `+ ":443"` so no test listener can be targeted, and no new live-network test is added
+- [x] write a failing test pinning that `body["host"]` carries no query, by extending the inherited `TestCertificateProvider_Status` (`certificate_provider_test.go:13`, which already dials `umputun.com`) with a `cert://umputun.com?cron=0_6_*_*_*` case asserting `body["host"] == "https://umputun.com"`: `certificate_provider.go:40` derives it a second time from the raw `req.URL`, so fixing only the dial leaves the query in the reported host
+- [x] replace the `TrimPrefix` at `file_provider.go:32` and both raw-URL uses in `certificate_provider.go` (`:18` and `:40`) with `parseTarget`
+- [x] keep the relative-path form working — `file://foo/bar.txt` must still resolve to `foo/bar.txt`
+- [x] add a test pinning that a bare `%` in a target now returns an error rather than a literal path, and confirm it surfaces as a 500 with no body per `service.go:146`
+- [x] run tests - must pass before task 8
 
 ### Task 8: Fix file provider read and delta-cache correctness
 

@@ -3,7 +3,6 @@ package external
 import (
 	"crypto/tls"
 	"fmt"
-	"strings"
 	"time"
 )
 
@@ -15,7 +14,11 @@ type CertificateProvider struct {
 // Status url looks like: cert://example.com. It will try to get SSL certificate and check if it is valid and not going to expire soon
 func (c *CertificateProvider) Status(req Request) (*Response, error) {
 	st := time.Now()
-	addr := strings.TrimPrefix(req.URL, "cert://") + ":443"
+	target, _, err := parseTarget(req.URL, "cert")
+	if err != nil {
+		return nil, fmt.Errorf("certificate URL parse failed: %s %s: %w", req.Name, req.URL, err)
+	}
+	addr := target + ":443"
 	conn, err := tls.Dial("tcp", addr, &tls.Config{}) //nolint:gosec // we don't care about cert version
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to %s: %w", addr, err)
@@ -37,7 +40,7 @@ func (c *CertificateProvider) Status(req Request) (*Response, error) {
 	body := map[string]any{
 		"expire":    earlierCert.Format(time.RFC3339),
 		"days_left": daysLeft,
-		"host":      strings.Replace(req.URL, "cert://", "https://", 1),
+		"host":      "https://" + target,
 		"status":    "ok",
 	}
 	if daysLeft < 5 {
