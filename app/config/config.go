@@ -142,7 +142,11 @@ func (p *Parameters) MarshalServices() []string {
 	}
 
 	for _, v := range p.Services.File {
-		res = append(res, fmt.Sprintf("%s:file://%s", v.Name, v.Path))
+		target := (&url.URL{Path: v.Path}).EscapedPath()
+		if first, _, _ := strings.Cut(target, "/"); strings.Contains(first, "@") {
+			target = "./" + target
+		}
+		res = append(res, fmt.Sprintf("%s:file://%s", v.Name, target))
 	}
 
 	for _, v := range p.Services.Mongo {
@@ -177,7 +181,11 @@ func (p *Parameters) MarshalServices() []string {
 	}
 
 	for _, v := range p.Services.Program {
-		prg := fmt.Sprintf("%s:program://%s", v.Name, v.Path)
+		target := (&url.URL{Path: v.Path}).EscapedPath()
+		if first, _, _ := strings.Cut(target, "/"); strings.Contains(first, "@") {
+			target = "./" + target
+		}
+		prg := fmt.Sprintf("%s:program://%s", v.Name, target)
 		query := url.Values{}
 		for _, arg := range v.Args {
 			query.Add("args", arg)

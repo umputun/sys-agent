@@ -2,6 +2,7 @@ package config
 
 import (
 	"net/url"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -159,5 +160,38 @@ func TestParameters_MarshalServices(t *testing.T) {
 		require.NoError(t, err)
 		p.Services.Program[0].Args = nil
 		assert.True(t, slices.Contains(p.MarshalServices(), "first:program:///usr/bin/example1"))
+	})
+
+	t.Run("provider targets preserve path characters", func(t *testing.T) {
+		p := &Parameters{}
+		p.Services.File = []File{
+			{Name: "file-percent", Path: "/srv/50%_done.tar"},
+			{Name: "file-question", Path: "/data/report?.csv"},
+			{Name: "file-hash", Path: "/data/a#b.log"},
+			{Name: "file-pattern", Path: "/data/*_[[.YYYY]]_?.tar"},
+			{Name: "file-userinfo", Path: "backup@daily/report.txt"},
+		}
+		p.Services.Program = []Program{
+			{Name: "program-percent", Path: "/srv/50%_done"},
+			{Name: "program-userinfo", Path: "backup@daily/report.sh"},
+		}
+		want := map[string]string{
+			"file-percent":     "/srv/50%_done.tar",
+			"file-question":    "/data/report?.csv",
+			"file-hash":        "/data/a#b.log",
+			"file-pattern":     "/data/*_[[.YYYY]]_?.tar",
+			"file-userinfo":    "backup@daily/report.txt",
+			"program-percent":  "/srv/50%_done",
+			"program-userinfo": "backup@daily/report.sh",
+		}
+
+		for _, service := range p.MarshalServices() {
+			name, rawURL, ok := strings.Cut(service, ":")
+			require.True(t, ok)
+			parsed, err := url.Parse(rawURL)
+			require.NoError(t, err)
+			assert.Nil(t, parsed.User)
+			assert.Equal(t, filepath.Clean(want[name]), filepath.Clean(parsed.Host+parsed.Path))
+		}
 	})
 }
