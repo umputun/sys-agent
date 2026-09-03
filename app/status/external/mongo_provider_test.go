@@ -38,6 +38,9 @@ func TestMongoProvider_Status(t *testing.T) {
 }
 
 func TestMongoProvider_StatusConcurrent(t *testing.T) {
+	_, _, teardown := mongo.MakeTestConnection(t)
+	defer teardown()
+
 	p := &MongoProvider{TimeOut: time.Second}
 	start := make(chan struct{})
 	errs := make(chan error, 2)
