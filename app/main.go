@@ -86,7 +86,7 @@ func main() {
 		HTTP:        &external.HTTPProvider{Timeout: opts.TimeOut},
 		Mongo:       &external.MongoProvider{TimeOut: opts.TimeOut},
 		Docker:      &external.DockerProvider{TimeOut: opts.TimeOut, APIVersion: opts.DockerAPIVersion},
-		Program:     &external.ProgramProvider{TimeOut: opts.TimeOut, WithShell: true},
+		Program:     &external.ProgramProvider{TimeOut: opts.TimeOut},
 		Nginx:       &external.NginxProvider{TimeOut: opts.TimeOut},
 		Certificate: &external.CertificateProvider{TimeOut: opts.TimeOut},
 		File:        &external.FileProvider{TimeOut: opts.TimeOut},

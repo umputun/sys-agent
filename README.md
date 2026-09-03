@@ -256,11 +256,16 @@ Request examples:
 
 #### `program` provider
 
-This check runs any predefined program/script and checks the exit code. All commands are executed in shell.
+This check executes a predefined program directly and checks its exit code. Add one `args` query parameter for each argument. No shell is invoked automatically.
 
 Request examples:
-- `foo:program://ps?args=-ef` - runs `ps -ef` and checks exit code
-- `bar:program:///tmp/foo/bar.sh` - runs /tmp/foo/bar.sh and checks exit code
+- `foo:program://ps?args=-e&args=-f` - runs `ps -e -f` and checks the exit code
+- `bar:program:///tmp/foo/bar.sh` - runs `/tmp/foo/bar.sh`; the file must be executable and its shebang interpreter must exist
+- `shell:program:///bin/sh?args=-c&args=ps%20-ef%20%7C%20grep%20sys-agent` - runs a pipeline when `/bin/sh` is available
+
+The official scratch image does not include a shell. A host deployment or another image can request shell behavior explicitly with `/bin/sh -c`, as shown in the URL example above.
+
+Targets and arguments follow URL percent-encoding rules. A raw `?` starts the query, a raw `#` is rejected as a fragment, and a bare `%` is invalid. Encode reserved characters in values, such as `%20` for a space, `%23` for `#`, and `%3F` for `?`.
 
 - Response example:
 
@@ -271,7 +276,7 @@ Request examples:
     "status_code": 200,
     "response_time": 44,
     "body": {
-      "command": "ps -ef",
+      "command": "ps -e -f",
       "stdout": "some output",
       "status": "ok"
     }

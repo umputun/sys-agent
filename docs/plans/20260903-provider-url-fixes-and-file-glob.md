@@ -378,16 +378,16 @@ Exports (justification per item: who outside the package calls this?):
 - Modify: `app/main.go`
 - Modify: `README.md`
 
-- [ ] add `testdata/argcount.sh` printing `$#` and each argument, so argv shape is observable — no existing fixture can distinguish zero args from one empty one
-- [ ] write a failing test pinning that `program://ps?args=-e&args=-f` produces two argv entries, not one
-- [ ] write a failing test pinning that `program:///path/to/prog` passes zero argv entries rather than one empty string, asserting on `argcount.sh` output
-- [ ] write a failing test pinning that `program://ps?cron=0_6_*_*_*` execs `ps`, not a binary named `ps?cron=...`
-- [ ] merge `TestProgram_StatusWithShell` and `TestProgram_StatusWithoutShell` — both set `WithShell: true` (`program_test.go:12` and `:44`), so the package will not compile once the field is gone, and they are near-duplicates without it
-- [ ] replace the `TrimPrefix` and `?args=` split with `parseTarget`, build `exec.CommandContext(ctx, target, args...)`, and report the real command in `res["command"]`
-- [ ] delete the `WithShell` field and its branch, and drop `WithShell: true` from `app/main.go:90`
-- [ ] add a test running `/bin/sh` with `args: ["-c", "…"]` to pin the documented escape hatch for shell features
-- [ ] update README:259 and :262-263 in this commit: remove "All commands are executed in shell", document the repeated `?args=` form, the `/bin/sh -c` escape hatch, that the `.sh` example needs an interpreter the scratch image lacks, and the percent-encoding rules
-- [ ] run tests - must pass before task 6
+- [x] add `testdata/argcount.sh` printing `$#` and each argument, so argv shape is observable — no existing fixture can distinguish zero args from one empty one
+- [x] write a failing test pinning that `program://ps?args=-e&args=-f` produces two argv entries, not one
+- [x] write a failing test pinning that `program:///path/to/prog` passes zero argv entries rather than one empty string, asserting on `argcount.sh` output
+- [x] write a failing test pinning that `program://ps?cron=0_6_*_*_*` execs `ps`, not a binary named `ps?cron=...`
+- [x] merge `TestProgram_StatusWithShell` and `TestProgram_StatusWithoutShell` — both set `WithShell: true` (`program_test.go:12` and `:44`), so the package will not compile once the field is gone, and they are near-duplicates without it
+- [x] replace the `TrimPrefix` and `?args=` split with `parseTarget`, build `exec.CommandContext(ctx, target, args...)`, and report the real command in `res["command"]`
+- [x] delete the `WithShell` field and its branch, and drop `WithShell: true` from `app/main.go:90`
+- [x] add a test running `/bin/sh` with `args: ["-c", "…"]` to pin the documented escape hatch for shell features
+- [x] update README:259 and :262-263 in this commit: remove "All commands are executed in shell", document the repeated `?args=` form, the `/bin/sh -c` escape hatch, that the `.sh` example needs an interpreter the scratch image lacks, and the percent-encoding rules
+- [x] run tests - must pass before task 6
 
 ### Task 6: Fix config URL assembly for program args and mongo query parameters
 
