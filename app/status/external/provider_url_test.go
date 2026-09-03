@@ -50,6 +50,7 @@ func TestParseTargetEncoding(t *testing.T) {
 		{name: "hash", rawURL: "file:///tmp/a%23b", wantTarget: "/tmp/a#b"},
 		{name: "space", rawURL: "file:///tmp/x%20y.txt", wantTarget: "/tmp/x y.txt"},
 		{name: "raw query", rawURL: "file:///tmp/a?b", wantTarget: "/tmp/a", wantQuery: url.Values{"b": {""}}},
+		{name: "relative at sign", rawURL: "file://./backup@daily/report.txt", wantTarget: "./backup@daily/report.txt"},
 	}
 
 	for _, tt := range tests {
@@ -77,6 +78,8 @@ func TestParseTargetErrors(t *testing.T) {
 		{name: "scheme mismatch", rawURL: "file:///tmp/a", wantScheme: "program", wantError: "unexpected scheme"},
 		{name: "empty target", rawURL: "file://", wantScheme: "file", wantError: "empty target"},
 		{name: "raw fragment", rawURL: "file:///tmp/a#b", wantScheme: "file", wantError: "fragment"},
+		{name: "trailing raw fragment", rawURL: "file:///tmp/report#", wantScheme: "file", wantError: "fragment"},
+		{name: "userinfo", rawURL: "file://backup@daily/report.txt", wantScheme: "file", wantError: "userinfo"},
 		{name: "malformed query", rawURL: "file:///tmp/a?cron=%zz", wantScheme: "file", wantError: "invalid URL escape"},
 		{name: "invalid port", rawURL: "program://ps:abc", wantScheme: "program", wantError: "invalid port"},
 	}
