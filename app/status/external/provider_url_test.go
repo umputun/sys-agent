@@ -2,10 +2,13 @@ package external
 
 import (
 	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/umputun/sys-agent/app/config"
 )
 
 func TestParseTarget(t *testing.T) {
@@ -91,4 +94,19 @@ func TestParseTargetErrors(t *testing.T) {
 			assert.ErrorContains(t, err, tt.wantError)
 		})
 	}
+}
+
+func TestParseTargetConfigRelativePaths(t *testing.T) {
+	params := &config.Parameters{}
+	params.Services.File = []config.File{{Name: "backup", Path: "*_gitlab_backup.tar"}}
+	params.Services.Program = []config.Program{{Name: "processes", Path: "ps"}}
+
+	services := params.MarshalServices()
+	require.Len(t, services, 2)
+	fileTarget, _, err := parseTarget(strings.TrimPrefix(services[0], "backup:"), "file")
+	require.NoError(t, err)
+	assert.Equal(t, "./*_gitlab_backup.tar", fileTarget)
+	programTarget, _, err := parseTarget(strings.TrimPrefix(services[1], "processes:"), "program")
+	require.NoError(t, err)
+	assert.Equal(t, "ps", programTarget)
 }

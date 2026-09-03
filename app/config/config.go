@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -143,7 +144,7 @@ func (p *Parameters) MarshalServices() []string {
 
 	for _, v := range p.Services.File {
 		target := (&url.URL{Path: v.Path}).EscapedPath()
-		if first, _, _ := strings.Cut(target, "/"); strings.Contains(first, "@") {
+		if !filepath.IsAbs(v.Path) {
 			target = "./" + target
 		}
 		res = append(res, fmt.Sprintf("%s:file://%s", v.Name, target))
@@ -181,9 +182,12 @@ func (p *Parameters) MarshalServices() []string {
 	}
 
 	for _, v := range p.Services.Program {
-		target := (&url.URL{Path: v.Path}).EscapedPath()
-		if first, _, _ := strings.Cut(target, "/"); strings.Contains(first, "@") {
-			target = "./" + target
+		target := v.Path
+		if filepath.IsAbs(v.Path) || filepath.Dir(v.Path) != "." {
+			target = (&url.URL{Path: v.Path}).EscapedPath()
+			if !filepath.IsAbs(v.Path) {
+				target = "./" + target
+			}
 		}
 		prg := fmt.Sprintf("%s:program://%s", v.Name, target)
 		query := url.Values{}
