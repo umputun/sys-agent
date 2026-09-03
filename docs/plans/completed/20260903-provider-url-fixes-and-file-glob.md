@@ -498,18 +498,20 @@ Exports (justification per item: who outside the package calls this?):
 
 ### Task 12: Verify acceptance criteria
 
-- [ ] verify each of the twelve defects enumerated in Overview has a regression test that fails without the fix; the glob-not-found case in Task 11 is a feature guard, not one of the twelve, and is documented as pinning existing behavior
-- [ ] verify the percent-encoding table in Technical Details is covered case for case
-- [ ] run full test suite: `cd app && go test -race -timeout=60s -count 1 ./...`
-- [ ] run `MONGO_TEST=mongodb://127.0.0.1:27017 go test ./...` if a local mongo is reachable; skip and note otherwise
-- [ ] run `golangci-lint run --max-issues-per-linter=0 --max-same-issues=0` from the top level
-- [ ] compare `go test -cover ./app/...` against the baseline recorded in Task 1
+- [x] verify each of the twelve defects enumerated in Overview has a regression test that fails without the fix; the glob-not-found case in Task 11 is a feature guard, not one of the twelve, and is documented as pinning existing behavior
+- [x] verify the percent-encoding table in Technical Details is covered case for case
+- [x] run full test suite: `cd app && go test -race -timeout=60s -count 1 ./...`
+- [x] run `MONGO_TEST=mongodb://127.0.0.1:27017 go test ./...` if a local mongo is reachable; skip and note otherwise
+- [x] run `golangci-lint run --max-issues-per-linter=0 --max-same-issues=0` from the top level
+- [x] compare `go test -cover ./app/...` against the baseline recorded in Task 1
+
+Evidence: all twelve defects have a regression test (parseTarget suite for 1-3, TestProgramProvider_Arguments and _ExplicitShell for 4-5, TestParameters_MarshalServices for 6, 11 and 12, TestFileProvider_MissingThenPresent for 7, TestFileProvider_EmptyFile and _Directory for 8, TestDayTemplate_ParseErrors for 9, TestMongoProvider_StatusConcurrent for 10). Suite exit 0 against live mongo, golangci-lint 2.13.2 reports 0 issues. Coverage re-measured at 5cc554d with the same go1.27.1 toolchain as the branch: app/status 69.8% before and after, status/external 90.8% to 91.9%. The 70.3% in the Task 1 baseline was a go1.25.0 measurement and is not comparable.
 
 ### Task 13: [Final] Update remaining documentation
 
-- [ ] update CLAUDE.md's provider URL section for the repeated `?args=` form, the removal of shell execution, and the glob/template syntax
-- [ ] confirm the README changes made in Tasks 5 and 11 are complete and consistent
-- [ ] move this plan to `docs/plans/completed/`
+- [x] update CLAUDE.md's provider URL section for the repeated `?args=` form, the removal of shell execution, and the glob/template syntax
+- [x] confirm the README changes made in Tasks 5 and 11 are complete and consistent
+- [x] move this plan to `docs/plans/completed/`
 
 ## Post-Completion
 

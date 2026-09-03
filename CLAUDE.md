@@ -98,13 +98,18 @@ Each external service provider uses specific URL format:
 - HTTP/HTTPS: `name:http://example.com/health`
 - MongoDB: `name:mongodb://user:pass@host:27017/?authSource=admin`
 - Docker: `name:docker:///var/run/docker.sock?containers=nginx:redis`
-- Program: `name:program:///path/to/script.sh`
+- Program: `name:program://ps?args=-e&args=-f`
+  - Executes directly without a shell; repeat `args` for each argument
+  - Shell features require an explicit interpreter, such as `/bin/sh` with `args=-c`
 - Nginx: `name:nginx://example.com:80/nginx_status`
 - Certificate: `name:cert://example.com`
-- File: `name:file:///path/to/file.txt`
+- File: `name:file:///backups/*_[[.YYYY]]_[[.MM]]_[[.DD]]_*.tar`
+  - Supports filepath globs and `YYYY`, `YY`, `MM`, `DD`, `YYYYMMDD`, `YYYYMM`, and `YYMMDD` templates in the process-local timezone
+  - Selects the newest match by modification time and reports `path` plus `match_count`
 - RMQ: `name:rmq://user:pass@host:15672/vhost/queue`
 
 Providers support `cron` query parameter for scheduled checks.
+Program and file targets use URL percent encoding. Encode `?` as `%3F` inside a path and `#` as `%23`.
 
 ## Dependencies
 

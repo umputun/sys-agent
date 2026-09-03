@@ -286,7 +286,7 @@ Targets and arguments follow URL percent-encoding rules. A raw `?` starts the qu
 
 #### `nginx` provider
 
-This check runs a request to the nginx status page, checks, and parses the response. In order to use this provider, you need to have nginx with the `stub_status` enabled.
+This check requests the nginx status page and parses the response. To use it, enable nginx `stub_status`.
 
 ```nginx
     location /nginx_status {
