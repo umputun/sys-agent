@@ -362,12 +362,12 @@ Standalone helpers planned (justification why NOT a method):
 Exports (justification per item: who outside the package calls this?):
 - none — lowercase, no out-of-package caller
 
-- [ ] write failing tests first for `parseTarget` covering `program://ps`, `program:///abs/path.sh`, `file://rel/f.txt`, `file:///abs/f.txt`, `cert://example.com`, each with and without `?cron=`
-- [ ] add cases pinning the percent-encoding table in Technical Details, including `%3F` becoming a glob wildcard and `50%_done.tar` returning an error
-- [ ] add cases for a scheme mismatch, an empty target, a non-empty raw fragment (`file:///tmp/a#b` must error rather than silently retarget to `/tmp/a`), and a malformed query escape (`?cron=%zz`) which `url.ParseQuery` reports and `u.Query()` swallows
-- [ ] add a case pinning `program://ps:abc` errors with `invalid port` — do not pin acceptance of `program://ps:80:90`, which parses today only incidentally
-- [ ] implement `parseTarget` in `provider_url.go` with a lowercase non-godoc comment, returning `u.Host + u.Path` and `url.ParseQuery(u.RawQuery)`, erroring on an empty target and a non-empty `u.Fragment`
-- [ ] run tests - must pass before task 5
+- [x] write failing tests first for `parseTarget` covering `program://ps`, `program:///abs/path.sh`, `file://rel/f.txt`, `file:///abs/f.txt`, `cert://example.com`, each with and without `?cron=`
+- [x] add cases pinning the percent-encoding table in Technical Details, including `%3F` becoming a glob wildcard and `50%_done.tar` returning an error
+- [x] add cases for a scheme mismatch, an empty target, a non-empty raw fragment (`file:///tmp/a#b` must error rather than silently retarget to `/tmp/a`), and a malformed query escape (`?cron=%zz`) which `url.ParseQuery` reports and `u.Query()` swallows
+- [x] add a case pinning `program://ps:abc` errors with `invalid port` — do not pin acceptance of `program://ps:80:90`, which parses today only incidentally
+- [x] implement `parseTarget` in `provider_url.go` with a lowercase non-godoc comment, returning `u.Host + u.Path` and `url.ParseQuery(u.RawQuery)`, erroring on an empty target and a non-empty `u.Fragment`
+- [x] run tests - must pass before task 5
 
 ### Task 5: Fix program provider argument handling and delete WithShell
 
