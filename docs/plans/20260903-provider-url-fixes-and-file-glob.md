@@ -315,11 +315,17 @@ Validation: `docker build .`, `go test ./... -race` with MongoDB, formatter chec
 - Modify: `go.sum`
 - Modify: `vendor/` (regenerated)
 
-- [ ] run `GOFLAGS=-mod=mod go get -u ./...` then `go mod tidy` — without `-mod=mod` the vendor directory makes every inventory command silently report nothing
-- [ ] run `go mod vendor` — the repo vendors, so a stale `vendor/` breaks the build
-- [ ] confirm no major-version line changed: `gopsutil` stays on `/v3` and `go.mongodb.org/mongo-driver` on v1, both deferred
-- [ ] run `go test ./... -race` and check for behavior changes in `go-pkgz/rest` 1.21→1.24
-- [ ] run the linter — must pass before task 3
+Update result: 20 modules used by this repository's packages or tests moved within their existing major lines, and testify added `go.yaml.in/yaml/v3` as an indirect dependency. A second `go get -t -u ./...` pass updated test-only `fileutils`; seven newer modules remain only in dependency metadata and are neither root requirements nor vendored packages.
+
+Dependency review: rest 1.21.0 to 1.24.0 changes the used `Recoverer` behavior only for `http.ErrAbortHandler`. The `AppInfo`, `Throttle`, `Ping`, `RenderJSON`, and `SendErrorJSON` APIs used by `server.go` remain compatible, and the server tests pass.
+
+Validation: `go mod verify`, `go test -mod=vendor ./...`, `go test -race ./...` with MongoDB, formatter checks, and golangci-lint 2.13.2 passed.
+
+- [x] run `GOFLAGS=-mod=mod go get -u ./...` then `go mod tidy` — without `-mod=mod` the vendor directory makes every inventory command silently report nothing
+- [x] run `go mod vendor` — the repo vendors, so a stale `vendor/` breaks the build
+- [x] confirm no major-version line changed: `gopsutil` stays on `/v3` and `go.mongodb.org/mongo-driver` on v1, both deferred
+- [x] run `go test ./... -race` and check for behavior changes in `go-pkgz/rest` 1.21→1.24
+- [x] run the linter — must pass before task 3
 
 ### Task 3: Refresh GitHub Actions tags
 
