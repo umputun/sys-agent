@@ -482,19 +482,19 @@ Standalone helpers planned (justification why NOT a method):
 Exports (justification per item: who outside the package calls this?):
 - none
 
-- [ ] add an unexported `now func() time.Time` field to `FileProvider` and a `clock()` accessor treating nil as `time.Now` — `main.go:93` builds a bare struct literal so the field is always nil in production, and the lazy-write pattern at `mongo_provider.go:36-38` would reproduce defect 10
-- [ ] write failing tests with the clock pinned to a non-UTC location, so a UTC-only implementation fails
-- [ ] define `fileDateFields` with `YYYY YY MM DD YYYYMMDD YYYYMM YYMMDD`, computed at midnight in the process-local zone
-- [ ] implement `expandTarget` with `[[`/`]]` delimiters, returning an error on parse failure rather than using `template.Must`, and on an unknown field such as `[[.Nope]]`
-- [ ] write a failing test with three files in a temp dir, asserting `*_gitlab_backup.tar` selects the newest by mtime
-- [ ] write a failing test asserting `*_[[.YYYY]]_[[.MM]]_[[.DD]]_*_gitlab_backup.tar` selects exactly today's file, and that `*_[[.YYYYMMDD]]_*` selects none, since that filename separates its date with underscores
-- [ ] write a failing test asserting `log_%3F%3F.txt` globs as `log_??.txt` and matches two-character names only
-- [ ] implement `resolveTarget`: expand, `filepath.Glob`, stat each match skipping any that vanished, propagate a non-ENOENT stat error, pick newest mtime with a deterministic tie-break on path
-- [ ] add `path` and `match_count` to the response body, and key the delta cache on the parsed query-free target before expansion, storing `{resolvedPath, FileInfo}` as the value
-- [ ] write a test asserting the exact cross-artifact `size_change` and the reported `path` across two polls whose resolved filename differs, and a third poll with a not-found in between to pin that the baseline survives
-- [ ] write a guard test that a glob matching nothing returns `status: not found` with code 200 — note this already holds today, since `os.Stat` on a path containing `*` returns `ErrNotExist`, so it pins behavior rather than failing first
-- [ ] update the README `file://` section in this commit: fix the response example at README:356 which is labelled `"cert"`, add the undocumented `content` field plus the new `path` and `match_count`, document glob and date templates, the percent-encoding rules, the process-local timezone, the midnight window on exact-day templates with glob-newest plus `since_modif` as the recommended alternative, and that a missing file returns 200 with `body.status = "not found"` so a status-code-only condition is silently satisfied
-- [ ] run tests - must pass before task 12
+- [x] add an unexported `now func() time.Time` field to `FileProvider` and a `clock()` accessor treating nil as `time.Now` — `main.go:93` builds a bare struct literal so the field is always nil in production, and the lazy-write pattern at `mongo_provider.go:36-38` would reproduce defect 10
+- [x] write failing tests with the clock pinned to a non-UTC location, so a UTC-only implementation fails
+- [x] define `fileDateFields` with `YYYY YY MM DD YYYYMMDD YYYYMM YYMMDD`, computed at midnight in the process-local zone
+- [x] implement `expandTarget` with `[[`/`]]` delimiters, returning an error on parse failure rather than using `template.Must`, and on an unknown field such as `[[.Nope]]`
+- [x] write a failing test with three files in a temp dir, asserting `*_gitlab_backup.tar` selects the newest by mtime
+- [x] write a failing test asserting `*_[[.YYYY]]_[[.MM]]_[[.DD]]_*_gitlab_backup.tar` selects exactly today's file, and that `*_[[.YYYYMMDD]]_*` selects none, since that filename separates its date with underscores
+- [x] write a failing test asserting `log_%3F%3F.txt` globs as `log_??.txt` and matches two-character names only
+- [x] implement `resolveTarget`: expand, `filepath.Glob`, stat each match skipping any that vanished, propagate a non-ENOENT stat error, pick newest mtime with a deterministic tie-break on path
+- [x] add `path` and `match_count` to the response body, and key the delta cache on the parsed query-free target before expansion, storing `{resolvedPath, FileInfo}` as the value
+- [x] write a test asserting the exact cross-artifact `size_change` and the reported `path` across two polls whose resolved filename differs, and a third poll with a not-found in between to pin that the baseline survives
+- [x] write a guard test that a glob matching nothing returns `status: not found` with code 200 — note this already holds today, since `os.Stat` on a path containing `*` returns `ErrNotExist`, so it pins behavior rather than failing first
+- [x] update the README `file://` section in this commit: fix the response example at README:356 which is labelled `"cert"`, add the undocumented `content` field plus the new `path` and `match_count`, document glob and date templates, the percent-encoding rules, the process-local timezone, the midnight window on exact-day templates with glob-newest plus `since_modif` as the recommended alternative, and that a missing file returns 200 with `body.status = "not found"` so a status-code-only condition is silently satisfied
+- [x] run tests - must pass before task 12
 
 ### Task 12: Verify acceptance criteria
 

@@ -347,34 +347,60 @@ Request examples:
 
 #### `file` provider
 
-Check if the file is present and set stats info
+Checks an exact path or glob pattern and reports information about the matching file. When a glob matches multiple paths, the provider selects the one with the newest modification time.
 
 Request examples:
-- `foo:file://foo/bar.txt` - Check if a file with a relative path exists and set stats info
-- `bar:file:///srv/foo/bar.txt` - Check if a file with the absolute path exists and set stats info
+- `foo:file://foo/bar.txt` - checks a relative path
+- `bar:file:///srv/foo/bar.txt` - checks an absolute path
+- `backups:file:///backups/*_gitlab_backup.tar` - selects the newest matching backup
+- `today:file:///backups/*_[[.YYYY]]_[[.MM]]_[[.DD]]_*_gitlab_backup.tar` - selects the newest backup whose name contains the current local date
 
+File targets support these date fields with `[[` and `]]` delimiters:
 
-- Response example:
+| Field | Value on 2026-09-03 |
+|---|---|
+| `YYYY` | `2026` |
+| `YY` | `26` |
+| `MM` | `09` |
+| `DD` | `03` |
+| `YYYYMMDD` | `20260903` |
+| `YYYYMM` | `202609` |
+| `YYMMDD` | `260903` |
+
+Templates use the process-local timezone, controlled by `TZ`. Atomic fields can match producer-specific separators. For example, `[[.YYYY]]_[[.MM]]_[[.DD]]` matches `2026_09_03`, while `[[.YYYYMMDD]]` does not.
+
+An exact-day template reports `not found` after midnight until that day's artifact appears. If the goal is freshness without this window, use a date-free glob and evaluate `since_modif` for the newest match.
+
+Targets follow URL percent-encoding rules. Encode `?` as `%3F` to use the single-character glob wildcard, `#` as `%23`, and spaces as `%20`. A raw `?` starts the query, a raw `#` is rejected as a fragment, and a bare `%` is invalid.
+
+Response example:
 
 ```json
 {
-  "cert": {
+  "file": {
     "name": "bar",
     "status_code": 200,
     "response_time": 44,
     "body": {
       "status": "found",
+      "path": "/srv/foo/bar.txt",
+      "match_count": 1,
       "modif_time": "2022-07-11T16:12:03.674378878-05:00",
       "size": 1234,
       "since_modif": 678900,
       "size_change": 1234,
-      "modif_change": 200
+      "modif_change": 200,
+      "content": "first 100 bytes of the file"
     }
   }
 }
 ```
 
-In addition to the current file status, this provider also keeps track of the difference between the current and previous file size and modification time and sets the following values: `size_change` (in bytes) and `modif_change` (in milliseconds).
+`match_count` is the number of matching paths that could be inspected. `content` contains up to the first 100 bytes of a regular file and is empty for an empty file or directory.
+
+The provider keeps the last successful result for each configured target. `size_change` and `modif_change` compare the selected file with that result, even when a glob or date template selects a different path.
+
+A missing target returns HTTP status 200 with `body.status` set to `not found` and `match_count` set to 0. A check that tests only `status_code` will not detect a missing file.
 
 #### `rmq` provider
 
