@@ -3,6 +3,7 @@ package external
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"sync"
 	"time"
@@ -37,12 +38,6 @@ func (f *FileProvider) Status(req Request) (*Response, error) {
 		return nil, fmt.Errorf("file stat failed: %s %s: %w", req.Name, fname, err)
 	}
 
-	defer func() { // set file info
-		f.lastInfo.lock.Lock()
-		defer f.lastInfo.lock.Unlock()
-		f.lastInfo.files[fname] = fi
-	}()
-
 	if err != nil {
 		result := Response{
 			Name:         req.Name,
@@ -62,24 +57,32 @@ func (f *FileProvider) Status(req Request) (*Response, error) {
 	body["modif_change"] = int64(0) // default to 0, if this was the first time we checked
 
 	f.lastInfo.lock.Lock()
-	if last, ok := f.lastInfo.files[fname]; ok {
+	last := f.lastInfo.files[fname]
+	f.lastInfo.lock.Unlock()
+	if last != nil {
 		body["size_change"] = fi.Size() - last.Size()
 		body["modif_change"] = fi.ModTime().Sub(last.ModTime()).Milliseconds()
 	}
+
+	body["content"] = ""
+	if !fi.IsDir() {
+		fh, err := os.Open(fname) //nolint:gosec // open file for reading, this is trusted file from the provider config
+		if err != nil {
+			return nil, fmt.Errorf("file open failed: %s %s: %w", req.Name, fname, err)
+		}
+		defer fh.Close() //nolint:gosec // ro file
+
+		data := make([]byte, 100)
+		n, readErr := fh.Read(data)
+		if readErr != nil && !errors.Is(readErr, io.EOF) {
+			return nil, fmt.Errorf("file read failed: %s %s: %w", req.Name, fname, readErr)
+		}
+		body["content"] = string(data[:n])
+	}
+
+	f.lastInfo.lock.Lock()
+	f.lastInfo.files[fname] = fi
 	f.lastInfo.lock.Unlock()
-
-	fh, err := os.Open(fname) //nolint:gosec // open file for reading, this is trusted file from the provider config
-	if err != nil {
-		return nil, fmt.Errorf("file open failed: %s %s: %w", req.Name, fname, err)
-	}
-	defer fh.Close() //nolint:gosec // ro file
-
-	data := make([]byte, 100)
-	n, err := fh.Read(data)
-	if err != nil {
-		return nil, fmt.Errorf("file read failed: %s %s: %w", req.Name, fname, err)
-	}
-	body["content"] = string(data[:n])
 
 	result := Response{
 		Name:         req.Name,

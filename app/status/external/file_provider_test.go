@@ -96,3 +96,66 @@ func TestFileProvider_Status(t *testing.T) {
 		assert.Nil(t, responses[0].Body)
 	})
 }
+
+func TestFileProvider_MissingThenPresent(t *testing.T) {
+	p := FileProvider{TimeOut: time.Second}
+	fname := filepath.Join(t.TempDir(), "appears.txt")
+
+	resp, err := p.Status(Request{Name: "file", URL: "file://" + fname})
+	require.NoError(t, err)
+	assert.Equal(t, "not found", resp.Body["status"])
+
+	require.NoError(t, os.WriteFile(fname, []byte("ready"), 0o600))
+	resp, err = p.Status(Request{Name: "file", URL: "file://" + fname})
+	require.NoError(t, err)
+	assert.Equal(t, "found", resp.Body["status"])
+	assert.Equal(t, "ready", resp.Body["content"])
+	assert.Equal(t, int64(5), resp.Body["size_change"])
+}
+
+func TestFileProvider_KeepsLastSuccessfulInfo(t *testing.T) {
+	p := FileProvider{TimeOut: time.Second}
+	fname := filepath.Join(t.TempDir(), "replaced.txt")
+	require.NoError(t, os.WriteFile(fname, []byte("old"), 0o600))
+
+	resp, err := p.Status(Request{Name: "file", URL: "file://" + fname})
+	require.NoError(t, err)
+	assert.Equal(t, int64(3), resp.Body["size_change"])
+
+	require.NoError(t, os.Remove(fname))
+	resp, err = p.Status(Request{Name: "file", URL: "file://" + fname})
+	require.NoError(t, err)
+	assert.Equal(t, "not found", resp.Body["status"])
+
+	require.NoError(t, os.WriteFile(fname, []byte("new-data"), 0o600))
+	resp, err = p.Status(Request{Name: "file", URL: "file://" + fname})
+	require.NoError(t, err)
+	assert.Equal(t, "found", resp.Body["status"])
+	assert.Equal(t, int64(5), resp.Body["size_change"])
+}
+
+func TestFileProvider_EmptyFile(t *testing.T) {
+	p := FileProvider{TimeOut: time.Second}
+	fname := filepath.Join(t.TempDir(), "empty.txt")
+	require.NoError(t, os.WriteFile(fname, nil, 0o600))
+
+	resp, err := p.Status(Request{Name: "file", URL: "file://" + fname})
+	require.NoError(t, err)
+	assert.Equal(t, "found", resp.Body["status"])
+	assert.Equal(t, int64(0), resp.Body["size"])
+	content, ok := resp.Body["content"]
+	require.True(t, ok)
+	assert.Empty(t, content)
+}
+
+func TestFileProvider_Directory(t *testing.T) {
+	p := FileProvider{TimeOut: time.Second}
+	dir := t.TempDir()
+
+	resp, err := p.Status(Request{Name: "dir", URL: "file://" + dir})
+	require.NoError(t, err)
+	assert.Equal(t, "found", resp.Body["status"])
+	content, ok := resp.Body["content"]
+	require.True(t, ok)
+	assert.Empty(t, content)
+}

@@ -426,13 +426,13 @@ Exports (justification per item: who outside the package calls this?):
 - Modify: `app/status/external/file_provider.go`
 - Modify: `app/status/external/file_provider_test.go`
 
-- [ ] write a failing test for the missing-then-present sequence: it currently panics on `last.Size()` and then deadlocks in the deferred writer on the mutex the panicking frame holds, so run it under `-timeout 30s` and assert a normal response
-- [ ] write a failing test for a zero-byte file, which returns `(0, io.EOF)` and today becomes a 500 with no body
-- [ ] write a failing test for a directory target, which fails at `fh.Read` with EISDIR
-- [ ] remove the deferred cache writer entirely: snapshot `last` under the lock, compute the deltas outside it, and store only at the successful end of `Status` — the defer is what deadlocks, and it also records stat info when a later open or read fails
-- [ ] on not-found, keep the previous good entry rather than storing nil or deleting, so the first success after a gap still reports a meaningful `size_change`
-- [ ] treat `io.EOF` as success with empty content, skip the read entirely when `fi.IsDir()`, and set `body["content"] = ""` in both cases so a downstream `body.content` condition still has a field
-- [ ] run tests - must pass before task 9
+- [x] write a failing test for the missing-then-present sequence: it currently panics on `last.Size()` and then deadlocks in the deferred writer on the mutex the panicking frame holds, so run it under `-timeout 30s` and assert a normal response
+- [x] write a failing test for a zero-byte file, which returns `(0, io.EOF)` and today becomes a 500 with no body
+- [x] write a failing test for a directory target, which fails at `fh.Read` with EISDIR
+- [x] remove the deferred cache writer entirely: snapshot `last` under the lock, compute the deltas outside it, and store only at the successful end of `Status` — the defer is what deadlocks, and it also records stat info when a later open or read fails
+- [x] on not-found, keep the previous good entry rather than storing nil or deleting, so the first success after a gap still reports a meaningful `size_change`
+- [x] treat `io.EOF` as success with empty content, skip the read entirely when `fi.IsDir()`, and set `body["content"] = ""` in both cases so a downstream `body.content` condition still has a field
+- [x] run tests - must pass before task 9
 
 ### Task 9: Return errors instead of panicking or silently corrupting mongo templates
 
