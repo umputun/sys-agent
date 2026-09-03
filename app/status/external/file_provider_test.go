@@ -3,6 +3,7 @@ package external
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -326,6 +327,21 @@ func TestFileProvider_GlobStatErrors(t *testing.T) {
 		_, err := p.Status(Request{Name: "files", URL: "file://" + filepath.Join(dir, "match-*")})
 		require.ErrorContains(t, err, "file stat failed")
 	})
+}
+
+func TestFileProvider_ExactPathStatError(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("directory permissions differ on Windows")
+	}
+	dir := t.TempDir()
+	path := filepath.Join(dir, "blocked.txt")
+	writeFile(t, path, "blocked")
+	require.NoError(t, os.Chmod(dir, 0))
+	t.Cleanup(func() { _ = os.Chmod(dir, 0o700) }) //nolint:gosec // cleanup needs directory traversal
+
+	p := FileProvider{TimeOut: time.Second}
+	_, err := p.Status(Request{Name: "blocked", URL: "file://" + path})
+	require.ErrorContains(t, err, "file stat failed")
 }
 
 func writeFile(t *testing.T, path, content string) {

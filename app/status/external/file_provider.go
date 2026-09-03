@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"text/template"
 	"time"
@@ -151,9 +152,16 @@ func (f *FileProvider) resolveTarget(target string) (fileMatch, error) {
 	if err != nil {
 		return fileMatch{}, err
 	}
-	matches, err := filepath.Glob(expanded)
-	if err != nil {
-		return fileMatch{}, fmt.Errorf("glob file target: %w", err)
+	matches := []string{expanded}
+	magicChars := `*?[`
+	if filepath.Separator != '\\' {
+		magicChars += `\`
+	}
+	if strings.ContainsAny(expanded, magicChars) {
+		matches, err = filepath.Glob(expanded)
+		if err != nil {
+			return fileMatch{}, fmt.Errorf("glob file target: %w", err)
+		}
 	}
 
 	result := fileMatch{}
