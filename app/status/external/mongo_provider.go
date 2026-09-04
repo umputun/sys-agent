@@ -25,6 +25,13 @@ type MongoProvider struct {
 	now func() time.Time // for testing
 }
 
+func (m *MongoProvider) clock() time.Time {
+	if m.now != nil {
+		return m.now()
+	}
+	return time.Now()
+}
+
 // Status returns status of mongo, checks if connection established and ping is ok
 // request URL looks like mongo:mongodb://172.17.42.1:27017/test?oplogMaxDelta=30m
 // oplogMaxDelta is optional, if set, checks if oplog is not too far behind
@@ -32,10 +39,6 @@ func (m *MongoProvider) Status(req Request) (*Response, error) {
 	st := time.Now()
 	ctx, cancel := context.WithTimeout(context.Background(), m.TimeOut)
 	defer cancel()
-
-	if m.now == nil {
-		m.now = time.Now
-	}
 
 	client, _, err := mongo.Connect(ctx, mopt.Client().SetAppName("sys-agent").SetConnectTimeout(m.TimeOut), req.URL)
 	if err != nil {
@@ -193,8 +196,11 @@ func (m *MongoProvider) countQuery(ctx context.Context, client *mdrv.Client, req
 	if countQuery == "" {
 		return -1, nil // no count filter requested
 	}
-	dt := NewDayTemplate(m.now())
-	countQuery = dt.Parse(countQuery) // replace date templates with actual dates, i.e. {"date": "[[.YYYYMMDD]]:00:00:00Z"}
+	dt := NewDayTemplate(m.clock())
+	countQuery, err := dt.Parse(countQuery)
+	if err != nil {
+		return 0, fmt.Errorf("mongo count query template failed: %w", err)
+	}
 
 	collection := req.Query().Get("collection")
 	db := req.Query().Get("db")
@@ -202,7 +208,7 @@ func (m *MongoProvider) countQuery(ctx context.Context, client *mdrv.Client, req
 		return 0, fmt.Errorf("collection and db should be provided for count query")
 	}
 	filter := bson.M{}
-	if err := bson.UnmarshalExtJSON([]byte(countQuery), false, &filter); err != nil {
+	if err = bson.UnmarshalExtJSON([]byte(countQuery), false, &filter); err != nil {
 		return 0, fmt.Errorf("mongo filter can't be parsed: %w", err)
 	}
 	coll := client.Database(db).Collection(collection)
@@ -289,13 +295,16 @@ func NewDayTemplate(ts time.Time) *DayTemplate {
 	return d
 }
 
-// Parse translate template to final string
-func (d DayTemplate) Parse(dayTemplate string) string {
+// Parse expands date placeholders in dayTemplate.
+func (d DayTemplate) Parse(dayTemplate string) (string, error) {
 	b1 := bytes.Buffer{}
 	tmpl := template.New("ymd").Delims("[[", "]]")
-	err := template.Must(tmpl.Parse(dayTemplate)).Execute(&b1, d)
+	parsed, err := tmpl.Parse(dayTemplate)
 	if err != nil {
-		log.Printf("[WARN] failed to parse day from %s", dayTemplate)
+		return "", fmt.Errorf("parse day template: %w", err)
 	}
-	return b1.String()
+	if err = parsed.Execute(&b1, d); err != nil {
+		return "", fmt.Errorf("execute day template: %w", err)
+	}
+	return b1.String(), nil
 }

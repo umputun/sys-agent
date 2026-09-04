@@ -1,7 +1,10 @@
 package config
 
 import (
+	"net/url"
+	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -74,7 +77,7 @@ func TestParameters_MarshalServices(t *testing.T) {
 			"first:file:///tmp/example1.txt", "second:file:///tmp/example2.txt",
 			"dev:mongodb://example.com:27017?oplogMaxDelta=30m0s",
 			"nginx:nginx://example.com:80",
-			"first:program:///usr/bin/example1?args=\"arg1 arg2\"", "second:program:///usr/bin/example2",
+			"first:program:///usr/bin/example1?args=arg1&args=arg2", "second:program:///usr/bin/example2",
 			"rmqtest:rmq://guest:passwd@example.com:15672/v1/q1",
 		}
 		assert.Equal(t, exp, p.MarshalServices())
@@ -84,20 +87,111 @@ func TestParameters_MarshalServices(t *testing.T) {
 		p, err := New("testdata/config.yml")
 		require.NoError(t, err)
 		p.Services.Mongo[0].URL = "mongodb://example.com:27017/admin?foo=bar&blah=blah"
-		exp := "dev:mongodb://example.com:27017/admin?foo=bar&blah=blah&oplogMaxDelta=30m0s"
-		res := p.MarshalServices()
-		assert.True(t, slices.Contains(res, exp), "expected %s in %v", exp, res)
+
+		var rawURL string
+		for _, service := range p.MarshalServices() {
+			if strings.HasPrefix(service, "dev:mongodb://") {
+				rawURL = strings.TrimPrefix(service, "dev:")
+				break
+			}
+		}
+		require.NotEmpty(t, rawURL)
+		parsed, err := url.Parse(rawURL)
+		require.NoError(t, err)
+		assert.Equal(t, "bar", parsed.Query().Get("foo"))
+		assert.Equal(t, "blah", parsed.Query().Get("blah"))
+		assert.Equal(t, "30m0s", parsed.Query().Get("oplogMaxDelta"))
 	})
 
 	t.Run("mongo with count params", func(t *testing.T) {
 		p, err := New("testdata/config.yml")
 		require.NoError(t, err)
 		p.Services.Mongo[0].URL = "mongodb://example.com:27017/admin"
+		p.Services.Mongo[0].OplogMaxDelta = 0
 		p.Services.Mongo[0].Collection = "coll"
 		p.Services.Mongo[0].DB = "test"
 		p.Services.Mongo[0].CountQuery = `{"status":"active"}`
-		exp := `dev:mongodb://example.com:27017/admin?oplogMaxDelta=30m0s&collection=coll&db=test&countQuery={"status":"active"}`
-		res := p.MarshalServices()
-		assert.True(t, slices.Contains(res, exp), "expected %s in %v", exp, res)
+
+		var rawURL string
+		for _, service := range p.MarshalServices() {
+			if strings.HasPrefix(service, "dev:mongodb://") {
+				rawURL = strings.TrimPrefix(service, "dev:")
+				break
+			}
+		}
+		require.NotEmpty(t, rawURL)
+		parsed, err := url.Parse(rawURL)
+		require.NoError(t, err)
+		assert.Equal(t, "/admin", parsed.Path)
+		assert.Equal(t, "coll", parsed.Query().Get("collection"))
+		assert.Equal(t, "test", parsed.Query().Get("db"))
+		assert.JSONEq(t, `{"status":"active"}`, parsed.Query().Get("count"))
+		assert.Empty(t, parsed.Query().Get("countQuery"))
+	})
+
+	t.Run("invalid mongo URL remains invalid", func(t *testing.T) {
+		p, err := New("testdata/config.yml")
+		require.NoError(t, err)
+		p.Services.Mongo[0].URL = "mongodb://example.com/%zz"
+		p.Services.Mongo[0].Collection = "coll"
+		assert.True(t, slices.Contains(p.MarshalServices(), "dev:mongodb://example.com/%zz"))
+	})
+
+	t.Run("program args are query values", func(t *testing.T) {
+		p, err := New("testdata/config.yml")
+		require.NoError(t, err)
+		p.Services.Program[0].Args = []string{"arg1", "arg two", "left&right"}
+
+		var rawURL string
+		for _, service := range p.MarshalServices() {
+			if strings.HasPrefix(service, "first:program://") {
+				rawURL = strings.TrimPrefix(service, "first:")
+				break
+			}
+		}
+		require.NotEmpty(t, rawURL)
+		parsed, err := url.Parse(rawURL)
+		require.NoError(t, err)
+		assert.Equal(t, []string{"arg1", "arg two", "left&right"}, parsed.Query()["args"])
+	})
+
+	t.Run("program without args has no query", func(t *testing.T) {
+		p, err := New("testdata/config.yml")
+		require.NoError(t, err)
+		p.Services.Program[0].Args = nil
+		assert.True(t, slices.Contains(p.MarshalServices(), "first:program:///usr/bin/example1"))
+	})
+
+	t.Run("provider targets preserve path characters", func(t *testing.T) {
+		p := &Parameters{}
+		p.Services.File = []File{
+			{Name: "file-percent", Path: "/srv/50%_done.tar"},
+			{Name: "file-question", Path: "/data/report?.csv"},
+			{Name: "file-hash", Path: "/data/a#b.log"},
+			{Name: "file-pattern", Path: "/data/*_[[.YYYY]]_?.tar"},
+			{Name: "file-userinfo", Path: "backup@daily/report.txt"},
+		}
+		p.Services.Program = []Program{
+			{Name: "program-percent", Path: "/srv/50%_done"},
+			{Name: "program-userinfo", Path: "backup@daily/report.sh"},
+		}
+		want := map[string]string{
+			"file-percent":     "/srv/50%_done.tar",
+			"file-question":    "/data/report?.csv",
+			"file-hash":        "/data/a#b.log",
+			"file-pattern":     "/data/*_[[.YYYY]]_?.tar",
+			"file-userinfo":    "backup@daily/report.txt",
+			"program-percent":  "/srv/50%_done",
+			"program-userinfo": "backup@daily/report.sh",
+		}
+
+		for _, service := range p.MarshalServices() {
+			name, rawURL, ok := strings.Cut(service, ":")
+			require.True(t, ok)
+			parsed, err := url.Parse(rawURL)
+			require.NoError(t, err)
+			assert.Nil(t, parsed.User)
+			assert.Equal(t, filepath.Clean(want[name]), filepath.Clean(parsed.Host+parsed.Path))
+		}
 	})
 }

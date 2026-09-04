@@ -256,11 +256,16 @@ Request examples:
 
 #### `program` provider
 
-This check runs any predefined program/script and checks the exit code. All commands are executed in shell.
+This check executes a predefined program directly and checks its exit code. Add one `args` query parameter for each argument. No shell is invoked automatically.
 
 Request examples:
-- `foo:program://ps?args=-ef` - runs `ps -ef` and checks exit code
-- `bar:program:///tmp/foo/bar.sh` - runs /tmp/foo/bar.sh and checks exit code
+- `foo:program://ps?args=-e&args=-f` - runs `ps -e -f` and checks the exit code
+- `bar:program:///tmp/foo/bar.sh` - runs `/tmp/foo/bar.sh`; the file must be executable and its shebang interpreter must exist
+- `shell:program:///bin/sh?args=-c&args=ps%20-ef%20%7C%20grep%20sys-agent` - runs a pipeline when `/bin/sh` is available
+
+The official scratch image does not include a shell. A host deployment or another image can request shell behavior explicitly with `/bin/sh -c`, as shown in the URL example above.
+
+Targets and arguments follow URL percent-encoding rules. A raw `?` starts the query, a raw `#` is rejected as a fragment, and a bare `%` is invalid. Encode reserved characters in values, such as `%20` for a space, `%23` for `#`, and `%3F` for `?`.
 
 - Response example:
 
@@ -271,7 +276,7 @@ Request examples:
     "status_code": 200,
     "response_time": 44,
     "body": {
-      "command": "ps -ef",
+      "command": "ps -e -f",
       "stdout": "some output",
       "status": "ok"
     }
@@ -281,7 +286,7 @@ Request examples:
 
 #### `nginx` provider
 
-This check runs a request to the nginx status page, checks, and parses the response. In order to use this provider, you need to have nginx with the `stub_status` enabled.
+This check requests the nginx status page and parses the response. To use it, enable nginx `stub_status`.
 
 ```nginx
     location /nginx_status {
@@ -342,34 +347,62 @@ Request examples:
 
 #### `file` provider
 
-Check if the file is present and set stats info
+Checks an exact path or glob pattern and reports information about the matching file. When a glob matches multiple paths, the provider selects the one with the newest modification time.
 
 Request examples:
-- `foo:file://foo/bar.txt` - Check if a file with a relative path exists and set stats info
-- `bar:file:///srv/foo/bar.txt` - Check if a file with the absolute path exists and set stats info
+- `foo:file://foo/bar.txt` - checks a relative path
+- `bar:file:///srv/foo/bar.txt` - checks an absolute path
+- `backups:file:///backups/*_gitlab_backup.tar` - selects the newest matching backup
+- `today:file:///backups/*_[[.YYYY]]_[[.MM]]_[[.DD]]_*_gitlab_backup.tar` - selects the newest backup whose name contains the current local date
 
+File targets support these date fields with `[[` and `]]` delimiters:
 
-- Response example:
+| Field | Value on 2026-09-03 |
+|---|---|
+| `YYYY` | `2026` |
+| `YY` | `26` |
+| `MM` | `09` |
+| `DD` | `03` |
+| `YYYYMMDD` | `20260903` |
+| `YYYYMM` | `202609` |
+| `YYMMDD` | `260903` |
+
+Templates use the process-local timezone, controlled by `TZ`. Atomic fields can match producer-specific separators. For example, `[[.YYYY]]_[[.MM]]_[[.DD]]` matches `2026_09_03`, while `[[.YYYYMMDD]]` does not.
+
+An exact-day template reports `not found` after midnight until that day's artifact appears. If the goal is freshness without this window, use a date-free glob and evaluate `since_modif` for the newest match.
+
+Targets follow URL percent-encoding rules. Encode `?` as `%3F` to use the single-character glob wildcard, `#` as `%23`, and spaces as `%20`. A raw `?` starts the query, a raw `#` is rejected as a fragment, and a bare `%` is invalid. YAML `path` values are encoded automatically.
+
+Decoded `*`, `?`, and `[` characters use filepath glob syntax. An existing filename containing these characters is no longer treated as an exact path. Prefix a relative target with `./` when its first segment contains `@`, since provider URLs reject userinfo.
+
+Response example:
 
 ```json
 {
-  "cert": {
+  "file": {
     "name": "bar",
     "status_code": 200,
     "response_time": 44,
     "body": {
       "status": "found",
+      "path": "/srv/foo/bar.txt",
+      "match_count": 1,
       "modif_time": "2022-07-11T16:12:03.674378878-05:00",
       "size": 1234,
       "since_modif": 678900,
       "size_change": 1234,
-      "modif_change": 200
+      "modif_change": 200,
+      "content": "first 100 bytes of the file"
     }
   }
 }
 ```
 
-In addition to the current file status, this provider also keeps track of the difference between the current and previous file size and modification time and sets the following values: `size_change` (in bytes) and `modif_change` (in milliseconds).
+`match_count` is the number of matching paths that could be inspected. `content` contains up to the first 100 bytes of a regular file and is empty for an empty file or directory.
+
+The provider keeps the last successful result for each configured target. `size_change` and `modif_change` compare the selected file with that result, even when a glob or date template selects a different path.
+
+A missing target returns HTTP status 200 with `body.status` set to `not found` and `match_count` set to 0. A check that tests only `status_code` will not detect a missing file.
 
 #### `rmq` provider
 

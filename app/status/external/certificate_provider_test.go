@@ -10,7 +10,7 @@ import (
 
 func TestCertificateProvider_Status(t *testing.T) {
 	cp := CertificateProvider{TimeOut: time.Minute}
-	resp, err := cp.Status(Request{Name: "test", URL: "cert://umputun.com"})
+	resp, err := cp.Status(Request{Name: "test", URL: "cert://umputun.com?cron=0_6_*_*_*"})
 	require.NoError(t, err)
 	t.Logf("%+v", resp)
 	assert.Equal(t, "test", resp.Name)

@@ -13,8 +13,7 @@ import (
 
 // ProgramProvider is an external service that runs a command and checks the exit code.
 type ProgramProvider struct {
-	WithShell bool
-	TimeOut   time.Duration
+	TimeOut time.Duration
 }
 
 // Status returns the status of the execution of the command from the request.
@@ -29,29 +28,25 @@ func (p *ProgramProvider) Status(req Request) (*Response, error) {
 		StatusCode: 200,
 	}
 
-	command := strings.TrimPrefix(req.URL, "program://")
-	args := ""
-	if strings.Contains(command, "?args=") {
-		elems := strings.Split(command, "?args=")
-		command, args = elems[0], elems[1]
+	target, query, err := parseTarget(req.URL, "program")
+	if err != nil {
+		return nil, fmt.Errorf("program URL parse failed: %s %s: %w", req.Name, req.URL, err)
 	}
+	args := query["args"]
 
-	log.Printf("[DEBUG] command: %s %s", command, args)
+	log.Printf("[DEBUG] command: %s %v", target, args)
 
-	cmd := exec.CommandContext(ctx, command, args) //nolint:gosec // we trust the command as it comes from the config
-	if p.WithShell {
-		command = fmt.Sprintf("sh -c %q", command+" "+args)
-	}
+	cmd := exec.CommandContext(ctx, target, args...) //nolint:gosec // we trust the command as it comes from the config
 	stdOut, stdErr := bytes.NewBuffer(nil), bytes.NewBuffer(nil)
 	cmd.Stdout = stdOut
 	cmd.Stderr = stdErr
 	cmd.Stdin = os.Stdin
 
-	err := cmd.Run()
+	err = cmd.Run()
 	resp.ResponseTime = time.Since(st).Milliseconds()
 
 	res := map[string]any{
-		"command": command + " " + args,
+		"command": strings.Join(cmd.Args, " "),
 		"stdout":  stdOut.String(),
 		"stderr":  stdErr.String(),
 		"status":  "ok",

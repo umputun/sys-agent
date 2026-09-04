@@ -3,7 +3,9 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -124,45 +126,51 @@ func (p *Parameters) MarshalServices() []string {
 	}
 
 	for _, v := range p.Services.Certificate {
-		url := strings.TrimPrefix(v.URL, "https://")
-		url = strings.TrimPrefix(url, "http://")
-		res = append(res, fmt.Sprintf("%s:cert://%s", v.Name, url))
+		target := strings.TrimPrefix(v.URL, "https://")
+		target = strings.TrimPrefix(target, "http://")
+		res = append(res, fmt.Sprintf("%s:cert://%s", v.Name, target))
 	}
 
 	for _, v := range p.Services.Docker {
-		url := strings.TrimPrefix(v.URL, "https://")
-		url = strings.TrimPrefix(url, "http://")
-		url = strings.TrimPrefix(url, "tcp://")
-		url = strings.TrimPrefix(url, "unix://")
+		target := strings.TrimPrefix(v.URL, "https://")
+		target = strings.TrimPrefix(target, "http://")
+		target = strings.TrimPrefix(target, "tcp://")
+		target = strings.TrimPrefix(target, "unix://")
 		if len(v.Containers) > 0 {
-			url += "?containers=" + strings.Join(v.Containers, ":")
+			target += "?containers=" + strings.Join(v.Containers, ":")
 		}
-		res = append(res, fmt.Sprintf("%s:docker://%s", v.Name, url))
+		res = append(res, fmt.Sprintf("%s:docker://%s", v.Name, target))
 	}
 
 	for _, v := range p.Services.File {
-		res = append(res, fmt.Sprintf("%s:file://%s", v.Name, v.Path))
+		target := (&url.URL{Path: v.Path}).EscapedPath()
+		if v.Path != "" && !filepath.IsAbs(v.Path) {
+			target = "./" + target
+		}
+		res = append(res, fmt.Sprintf("%s:file://%s", v.Name, target))
 	}
 
 	for _, v := range p.Services.Mongo {
-		m := fmt.Sprintf("%s:%s", v.Name, v.URL)
+		mongoURL, err := url.Parse(v.URL)
+		if err != nil {
+			res = append(res, fmt.Sprintf("%s:%s", v.Name, v.URL))
+			continue
+		}
+		query := mongoURL.Query()
 		if v.OplogMaxDelta > 0 {
-			if strings.Contains(m, "?") {
-				m += fmt.Sprintf("&oplogMaxDelta=%v", v.OplogMaxDelta)
-			} else {
-				m += fmt.Sprintf("?oplogMaxDelta=%v", v.OplogMaxDelta)
-			}
+			query.Set("oplogMaxDelta", v.OplogMaxDelta.String())
 		}
 		if v.Collection != "" {
-			m += fmt.Sprintf("&collection=%s", v.Collection)
+			query.Set("collection", v.Collection)
 		}
 		if v.DB != "" {
-			m += fmt.Sprintf("&db=%s", v.DB)
+			query.Set("db", v.DB)
 		}
 		if v.CountQuery != "" {
-			m += fmt.Sprintf("&countQuery=%s", v.CountQuery)
+			query.Set("count", v.CountQuery)
 		}
-		res = append(res, m)
+		mongoURL.RawQuery = query.Encode()
+		res = append(res, fmt.Sprintf("%s:%s", v.Name, mongoURL.String()))
 	}
 
 	for _, v := range p.Services.Nginx {
@@ -174,9 +182,20 @@ func (p *Parameters) MarshalServices() []string {
 	}
 
 	for _, v := range p.Services.Program {
-		prg := fmt.Sprintf("%s:program://%s", v.Name, v.Path)
-		if len(v.Args) > 0 {
-			prg += "?args=\"" + strings.Join(v.Args, " ") + "\""
+		target := v.Path
+		if filepath.IsAbs(v.Path) || filepath.Dir(v.Path) != "." {
+			target = (&url.URL{Path: v.Path}).EscapedPath()
+			if !filepath.IsAbs(v.Path) {
+				target = "./" + target
+			}
+		}
+		prg := fmt.Sprintf("%s:program://%s", v.Name, target)
+		query := url.Values{}
+		for _, arg := range v.Args {
+			query.Add("args", arg)
+		}
+		if encoded := query.Encode(); encoded != "" {
+			prg += "?" + encoded
 		}
 		res = append(res, prg)
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"sync"
 	"testing"
 	"time"
 
@@ -34,6 +35,29 @@ func TestMongoProvider_Status(t *testing.T) {
 		_, err := p.Status(Request{Name: "test", URL: "mongodb://localhost:27000"})
 		require.Error(t, err)
 	})
+}
+
+func TestMongoProvider_StatusConcurrent(t *testing.T) {
+	_, _, teardown := mongo.MakeTestConnection(t)
+	defer teardown()
+
+	p := &MongoProvider{TimeOut: time.Second}
+	start := make(chan struct{})
+	errs := make(chan error, 2)
+	var wg sync.WaitGroup
+	for range 2 {
+		wg.Go(func() {
+			<-start
+			_, err := p.Status(Request{Name: "test", URL: "mongodb://localhost:27017"})
+			errs <- err
+		})
+	}
+	close(start)
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		require.NoError(t, err)
+	}
 }
 
 func TestMongoProvider_parseReplStatus(t *testing.T) {
@@ -196,6 +220,23 @@ func TestMongoProvider_count(t *testing.T) {
 		_, err := p.Status(Request{Name: "test", URL: mongoURL})
 		require.ErrorContains(t, err, "collection and db should be provided for count query")
 	})
+
+	for _, tt := range []struct {
+		name      string
+		template  string
+		wantError string
+	}{
+		{name: "malformed template", template: `{"date": "[[.YYYYMMDD"}`, wantError: "parse day template"},
+		{name: "unknown function", template: `[[ .YYYYMMDD | nosuchfunc ]]`, wantError: "parse day template"},
+		{name: "unknown field", template: `[[.Nope]]`, wantError: "execute day template"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			mongoURL := fmt.Sprintf("mongodb://localhost:27017/admin?db=test&collection=%s&count=%s",
+				coll.Name(), url.QueryEscape(tt.template))
+			_, err := p.Status(Request{Name: "test", URL: mongoURL})
+			require.ErrorContains(t, err, tt.wantError)
+		})
+	}
 }
 
 func TestMongoProvider_countWithDate(t *testing.T) {
@@ -218,7 +259,8 @@ func TestMongoProvider_countWithDate(t *testing.T) {
 
 	t.Run("valid count query, 5 days back", func(t *testing.T) {
 		query := `{"status":"active", "dt":{"$gte":[[.YYYYMMDD5]]} }`
-		parsed := NewDayTemplate(dt).Parse(query)
+		parsed, err := NewDayTemplate(dt).Parse(query)
+		require.NoError(t, err)
 		assert.JSONEq(t, `{"status":"active", "dt":{"$gte":{"$date":"2024-05-02T20:30:00Z"}} }`, parsed)
 
 		mongoURL := fmt.Sprintf("mongodb://localhost:27017/admin?db=test&collection=%s&count=%s", coll.Name(), query)
@@ -231,7 +273,8 @@ func TestMongoProvider_countWithDate(t *testing.T) {
 
 	t.Run("valid count query, 1 day back", func(t *testing.T) {
 		query := `{"status":"active", "dt":{"$gte":[[.YYYYMMDD1]]} }`
-		parsed := NewDayTemplate(dt).Parse(query)
+		parsed, err := NewDayTemplate(dt).Parse(query)
+		require.NoError(t, err)
 		assert.JSONEq(t, `{"status":"active", "dt":{"$gte":{"$date":"2024-05-06T20:30:00Z"}} }`, parsed)
 
 		mongoURL := fmt.Sprintf("mongodb://localhost:27017/admin?db=test&collection=%s&count=%s", coll.Name(), query)
@@ -241,4 +284,23 @@ func TestMongoProvider_countWithDate(t *testing.T) {
 		t.Logf("%+v", resp)
 		assert.Equal(t, int64(2), resp.Body["count"])
 	})
+}
+
+func TestDayTemplate_ParseErrors(t *testing.T) {
+	d := NewDayTemplate(time.Date(2026, 9, 3, 12, 0, 0, 0, time.UTC))
+	for _, tt := range []struct {
+		name      string
+		input     string
+		wantError string
+	}{
+		{name: "malformed template", input: `{"date": "[[.YYYYMMDD"}`, wantError: "parse day template"},
+		{name: "unknown function", input: `[[ .YYYYMMDD | nosuchfunc ]]`, wantError: "parse day template"},
+		{name: "unknown field", input: `[[.Nope]]`, wantError: "execute day template"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			parsed, err := d.Parse(tt.input)
+			require.ErrorContains(t, err, tt.wantError)
+			assert.Empty(t, parsed)
+		})
+	}
 }
