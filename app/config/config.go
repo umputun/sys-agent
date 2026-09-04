@@ -144,7 +144,7 @@ func (p *Parameters) MarshalServices() []string {
 
 	for _, v := range p.Services.File {
 		target := (&url.URL{Path: v.Path}).EscapedPath()
-		if !filepath.IsAbs(v.Path) {
+		if v.Path != "" && !filepath.IsAbs(v.Path) {
 			target = "./" + target
 		}
 		res = append(res, fmt.Sprintf("%s:file://%s", v.Name, target))

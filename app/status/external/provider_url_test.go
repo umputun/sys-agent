@@ -110,3 +110,23 @@ func TestParseTargetConfigRelativePaths(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "ps", programTarget)
 }
+
+func TestParseTargetConfigEmptyPaths(t *testing.T) {
+	t.Run("file", func(t *testing.T) {
+		params := &config.Parameters{}
+		params.Services.File = []config.File{{Name: "backup"}}
+		services := params.MarshalServices()
+		require.Len(t, services, 1)
+		_, _, err := parseTarget(strings.TrimPrefix(services[0], "backup:"), "file")
+		require.ErrorContains(t, err, "empty target")
+	})
+
+	t.Run("program", func(t *testing.T) {
+		params := &config.Parameters{}
+		params.Services.Program = []config.Program{{Name: "backup"}}
+		services := params.MarshalServices()
+		require.Len(t, services, 1)
+		_, _, err := parseTarget(strings.TrimPrefix(services[0], "backup:"), "program")
+		require.ErrorContains(t, err, "empty target")
+	})
+}
