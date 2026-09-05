@@ -137,13 +137,15 @@ func (s *Service) Status() []Response {
 				resp, err = s.providers.RMQ.Status(r)
 			default:
 				log.Printf("[WARN] unsupported protocol for service, %s %s", r.Name, r.URL)
-				ch <- Response{Name: r.Name, StatusCode: http.StatusInternalServerError, ResponseTime: time.Since(st).Milliseconds()}
+				ch <- Response{Name: r.Name, StatusCode: http.StatusInternalServerError,
+					ResponseTime: time.Since(st).Milliseconds(), Body: map[string]any{"error": "unsupported protocol"}}
 				return
 			}
 
 			if err != nil {
 				log.Printf("[WARN] service request failed: %s %s: %v", r.Name, r.URL, err)
-				ch <- Response{Name: r.Name, StatusCode: http.StatusInternalServerError, ResponseTime: time.Since(st).Milliseconds()}
+				ch <- Response{Name: r.Name, StatusCode: http.StatusInternalServerError,
+					ResponseTime: time.Since(st).Milliseconds(), Body: map[string]any{"error": sanitizeErr(err, r.URL)}}
 				return
 			}
 

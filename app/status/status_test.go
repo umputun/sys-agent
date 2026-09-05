@@ -1,6 +1,7 @@
 package status
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -29,6 +30,7 @@ func TestService_Get(t *testing.T) {
 	}}
 
 	svc := Service{
+		Version:     "v1.7.2-abcdef-20260905",
 		Volumes:     []Volume{{Name: "root", Path: "/"}},
 		ExtServices: ex,
 	}
@@ -45,6 +47,7 @@ func TestService_Get(t *testing.T) {
 	assert.Positive(t, res.Uptime)
 
 	assert.Len(t, res.ExtServices, 2)
+	assert.Equal(t, "v1.7.2-abcdef-20260905", res.Version)
 }
 
 func TestService_GetNoExt(t *testing.T) {
@@ -65,4 +68,16 @@ func TestService_GetNoExt(t *testing.T) {
 	assert.Positive(t, res.Uptime)
 
 	assert.Empty(t, res.ExtServices)
+}
+
+func TestService_GetVersionOmittedWhenUnset(t *testing.T) {
+	svc := Service{Volumes: []Volume{{Name: "root", Path: "/"}}}
+
+	res, err := svc.Get()
+	require.NoError(t, err)
+	assert.Empty(t, res.Version)
+
+	data, err := json.Marshal(res)
+	require.NoError(t, err)
+	assert.NotContains(t, string(data), `"version"`)
 }

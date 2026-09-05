@@ -19,6 +19,7 @@ import (
 type Service struct {
 	Volumes     []Volume
 	ExtServices ExtServices
+	Version     string
 }
 
 // ExtServices declares interface to get status of all external services
@@ -28,6 +29,7 @@ type ExtServices interface {
 
 // Info contains disk and cpu utilization results
 type Info struct {
+	Version    string            `json:"version,omitempty"`
 	HostName   string            `json:"hostname"`
 	Procs      int               `json:"procs"`
 	HostID     string            `json:"host_id"`
@@ -73,6 +75,7 @@ func (s Service) Get() (*Info, error) {
 	}
 
 	res := Info{
+		Version:    s.Version,
 		HostName:   hostStat.Hostname,
 		Procs:      int(hostStat.Procs), //nolint: gosec // overflow is not possible
 		HostID:     hostStat.HostID,

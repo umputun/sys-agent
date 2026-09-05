@@ -73,3 +73,21 @@ func TestRMQ_StatusFailed(t *testing.T) {
 	require.ErrorContains(t, err, "failed to get RabbitMQ response")
 	require.ErrorContains(t, err, "500 Internal Server Error")
 }
+
+func TestRMQAPIURL(t *testing.T) {
+	tbl := []struct {
+		name   string
+		rawURL string
+		want   string
+	}{
+		{name: "queues path", rawURL: "rmq://host:15672/vh/queues/q", want: "https://host:15672/vh/api/queues/q"},
+		{name: "no queues segment", rawURL: "rmq://host:15672/vh/q", want: "https://host:15672/vh/q"},
+		{name: "first occurrence only", rawURL: "rmq://host/queues/a/queues/b", want: "https://host/api/queues/a/queues/b"},
+	}
+
+	for _, tt := range tbl {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, rmqAPIURL(tt.rawURL, "https://"))
+		})
+	}
+}

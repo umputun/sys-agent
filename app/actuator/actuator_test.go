@@ -1,6 +1,7 @@
 package actuator
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -228,4 +229,23 @@ func TestDiscovery(t *testing.T) {
 	assert.Equal(t, "/actuator", result.Links["self"].Href)
 	assert.Equal(t, "/actuator/health", result.Links["health"].Href)
 	assert.Len(t, result.Links, 2)
+}
+
+func TestFromStatusInfo_VersionNotExposed(t *testing.T) {
+	info := &status.Info{
+		Version:    "v1.7.2-abcdef-20260905",
+		CPUPercent: 10,
+		MemPercent: 20,
+		ExtServices: map[string]external.Response{
+			"mongo": {Name: "mongo", StatusCode: 200, ResponseTime: 10},
+		},
+	}
+
+	resp := FromStatusInfo(info)
+	require.NotNil(t, resp)
+	assert.Equal(t, StatusUp, resp.Status)
+
+	data, err := json.Marshal(resp)
+	require.NoError(t, err)
+	assert.NotContains(t, string(data), "v1.7.2-abcdef-20260905")
 }

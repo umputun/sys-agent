@@ -94,7 +94,7 @@ func TestFileProvider_Status(t *testing.T) {
 		responses := service.Status()
 		require.Len(t, responses, 1)
 		assert.Equal(t, 500, responses[0].StatusCode)
-		assert.Nil(t, responses[0].Body)
+		assert.Contains(t, responses[0].Body["error"], "invalid URL escape")
 	})
 }
 

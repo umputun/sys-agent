@@ -15,7 +15,7 @@ RUN \
     cd app && go build -o /build/sys-agent -ldflags "-X main.revision=${version} -s -w"
 
 
-FROM umputun/baseimage:scratch-latest
+FROM umputun/baseimage:scratch-v1.21.1
 # enables automatic changelog generation by tools like Dependabot
 LABEL org.opencontainers.image.source="https://github.com/umputun/sys-agent"
 COPY --from=build /build/sys-agent /srv/sys-agent

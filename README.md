@@ -91,6 +91,7 @@ The config file has the same structure as command line options. `sys-agent` conv
 
 ```json
 {
+  "version": "v1.7.2-a1b2c3d-20260905T12:00:00",
   "hostname": "BigMac.localdomain",
   "procs": 723,
   "host_id": "cd9973a05-85e7-5bca0-b393-5285825e3556",
@@ -112,9 +113,11 @@ The config file has the same structure as command line options. `sys-agent` conv
 }
 ```
 
+`version` reports the running binary's revision, the same value served in the `App-Version` response header. It is omitted from a build with no revision set.
+
 ## external services
 
-In addition to the basic checks `sys-agent` can report the status of external services. Each service is defined as a "name:url" pair for supported protocols (`http`, `mongodb`, `docker`, `file`, `nginx`, `cert`, `rmq` and `program`). Each service will be reported as a separate element in the response, and all responses have a similar structure: `name` (service name), `status_code` (`200` or `4xx`), and `response_time` in milliseconds. The `body` includes the response details JSON, different for each service.
+In addition to the basic checks `sys-agent` can report the status of external services. Each service is defined as a "name:url" pair for supported protocols (`http`, `mongodb`, `docker`, `file`, `nginx`, `cert`, `rmq` and `program`). Each service will be reported as a separate element in the response, and all responses have a similar structure: `name` (service name), `status_code` (`200` or `4xx`), and `response_time` in milliseconds. The `body` includes the response details JSON, different for each service. A check failing before its provider can answer reports `status_code` 500 with `body.error` describing the failure; the credentials configured in the target - userinfo and query values - are removed from that message, which the WARN log keeps in full.
 
 ### service providers (protocols)
 
@@ -540,6 +543,7 @@ response:
 
 ```json
 {
+  "version": "v1.7.2-a1b2c3d-20260905T12:00:00",
   "hostname": "BigMac.localdomain",
   "procs": 723,
   "host_id": "cd9973a05-85e7-5bca0-b393-5285825e3556",

@@ -97,6 +97,7 @@ func main() {
 		Listen:  opts.Listen,
 		Version: revision,
 		Status: &status.Service{
+			Version:     revision,
 			Volumes:     vols,
 			ExtServices: external.NewService(providers, opts.Concurrency, services(opts.Services, conf)...),
 		},

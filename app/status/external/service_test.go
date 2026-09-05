@@ -1,6 +1,7 @@
 package external
 
 import (
+	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -82,6 +83,7 @@ func TestService_Status(t *testing.T) {
 
 	assert.Equal(t, "bad", res[0].Name)
 	assert.Equal(t, 500, res[0].StatusCode)
+	assert.Equal(t, map[string]any{"error": "unsupported protocol"}, res[0].Body)
 
 	assert.Equal(t, "cert", res[1].Name)
 	assert.Equal(t, 204, res[1].StatusCode)
@@ -235,4 +237,88 @@ func TestService_cronFilter(t *testing.T) {
 		require.NoError(t, err)
 		assert.False(t, ok)
 	})
+}
+
+func TestService_StatusProviderErrorBody(t *testing.T) {
+	pm := &StatusProviderMock{StatusFunc: func(r Request) (*Response, error) {
+		return nil, fmt.Errorf("mongo connect failed: %s %s: server selection timeout", r.Name, r.URL)
+	}}
+	s := NewService(Providers{Mongo: pm}, 1, "db:mongodb://user:sup3rsecret@127.0.0.1:27017/?authSource=admin")
+
+	res := s.Status()
+	require.Len(t, res, 1)
+	assert.Equal(t, 500, res[0].StatusCode)
+
+	body, ok := res[0].Body["error"].(string)
+	require.True(t, ok)
+	assert.NotContains(t, body, "sup3rsecret")
+	assert.Contains(t, body, "mongodb://xxxxx@127.0.0.1:27017/?authSource=xxxxx")
+	assert.Contains(t, body, "server selection timeout")
+}
+
+func TestService_StatusRealMongoErrorBodyRedacted(t *testing.T) {
+	const secret = "sup3rsecret%zz"
+	target := "mongodb://127.0.0.1:27017/?tlsCertificateKeyFilePassword=" + secret
+
+	p := &MongoProvider{TimeOut: time.Second}
+	s := NewService(Providers{Mongo: p}, 1, "probe:"+target)
+
+	res := s.Status()
+	require.Len(t, res, 1)
+	require.Equal(t, 500, res[0].StatusCode)
+
+	body, ok := res[0].Body["error"].(string)
+	require.True(t, ok)
+	// the driver quotes the offending option value again outside the URL, so URL masking alone misses it
+	assert.NotContains(t, body, secret)
+	assert.Contains(t, body, "mongo connect failed")
+}
+
+func TestService_StatusRealProviderErrorBodyRedacted(t *testing.T) {
+	// marker is a substring of every secret below, so asserting its absence also catches an escaped
+	// copy - checking the raw value alone passes against an implementation that only escapes it
+	const marker = "sup3rsecret"
+
+	tbl := []struct {
+		name   string
+		target string
+		absent []string
+	}{
+		{name: "mongo quoted option", target: `mongodb://127.0.0.1:27017/?tlsCertificateKeyFilePassword=` + marker + `"tail%zz`,
+			absent: []string{marker, marker + `"tail`, marker + `"tail`}},
+		{name: "mongo backslash option", target: `mongodb://127.0.0.1:27017/?tlsCertificateKeyFilePassword=` + marker + `	ail%zz`,
+			absent: []string{marker, marker + `	ail`, marker + `\tail`}},
+		{name: "mongo two character option", target: "mongodb://127.0.0.1:27017/?tlsCertificateKeyFilePassword=%q", absent: []string{"%q"}},
+		{name: "http slash in password", target: "http://user:" + marker + "/part@127.0.0.1/health", absent: []string{marker}},
+		{name: "http question mark in password", target: "http://user:" + marker + "?part@127.0.0.1/health", absent: []string{marker}},
+		{name: "http hash in password", target: "http://user:" + marker + "#part@127.0.0.1/health", absent: []string{marker}},
+		{name: "file userinfo", target: "file://user:" + marker + "%zz@127.0.0.1/path", absent: []string{marker}},
+		{name: "program userinfo", target: "program://user:" + marker + "%zz@127.0.0.1/path", absent: []string{marker}},
+		{name: "cert userinfo", target: "cert://user:" + marker + "%zz@127.0.0.1/path", absent: []string{marker}},
+		// net/url reads user:123 as host and port here, the mongo driver reads it as credentials
+		{name: "mongo slash password behind numeric port", target: "mongodb://user:123/" + marker + "@127.0.0.1/", absent: []string{marker}},
+		{name: "mongo query password behind numeric port", target: "mongodb://user:123?" + marker + "@127.0.0.1:bad/", absent: []string{marker}},
+		// the rmq provider rewrites /queues/ before requesting, so its error repeats a transformed value
+		{name: "rmq rewritten query value", target: "rmq://127.0.0.1:bad/vh/q?token=prefix /queues/" + marker, absent: []string{marker}},
+		{name: "rmq userinfo", target: "rmq://user:" + marker + "@127.0.0.1:bad/vh/queues/q", absent: []string{marker}},
+		{name: "nginx userinfo", target: "nginx://user:" + marker + "@127.0.0.1:bad/nginx_status", absent: []string{marker}},
+	}
+
+	for _, tt := range tbl {
+		t.Run(tt.name, func(t *testing.T) {
+			providers := Providers{Mongo: &MongoProvider{TimeOut: time.Second}, HTTP: &HTTPProvider{Timeout: time.Second},
+				File: &FileProvider{TimeOut: time.Second}, Program: &ProgramProvider{TimeOut: time.Second},
+				Certificate: &CertificateProvider{TimeOut: time.Second}, RMQ: &RMQProvider{TimeOut: time.Second},
+				Nginx: &NginxProvider{TimeOut: time.Second}}
+			res := NewService(providers, 1, "probe:"+tt.target).Status()
+			require.Len(t, res, 1)
+			require.Equal(t, 500, res[0].StatusCode)
+
+			body, ok := res[0].Body["error"].(string)
+			require.True(t, ok)
+			for _, secret := range tt.absent {
+				assert.NotContains(t, body, secret)
+			}
+		})
+	}
 }

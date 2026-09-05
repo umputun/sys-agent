@@ -44,12 +44,10 @@ func (h *RMQProvider) Status(req Request) (*Response, error) {
 
 	st := time.Now()
 	client := http.Client{Timeout: h.TimeOut}
-	u := strings.Replace(req.URL, "rmq://", "https://", 1)
-	u = strings.Replace(u, "/queues/", "/api/queues/", 1)
+	u := rmqAPIURL(req.URL, "https://")
 	resp, err := client.Get(u)
 	if err != nil {
-		u = strings.Replace(req.URL, "rmq://", "http://", 1)
-		u = strings.Replace(u, "/queues/", "/api/queues/", 1)
+		u = rmqAPIURL(req.URL, "http://")
 		resp, err = client.Get(u)
 		if err != nil {
 			return nil, fmt.Errorf("both https and http failed for %s: %w", req.URL, err)
@@ -87,4 +85,15 @@ func (h *RMQProvider) Status(req Request) (*Response, error) {
 	result.ResponseTime = time.Since(st).Milliseconds()
 	result.Body = body
 	return result, nil
+}
+
+// rmqAPIURL turns a configured rmq target into the management API URL. sanitizeErr applies the same
+// rewrite to credential candidates, so this must stay the single definition of it.
+func rmqAPIURL(rawURL, scheme string) string {
+	return rmqAPIPath(strings.Replace(rawURL, "rmq://", scheme, 1))
+}
+
+// rmqAPIPath inserts the management API prefix ahead of the queues segment.
+func rmqAPIPath(s string) string {
+	return strings.Replace(s, "/queues/", "/api/queues/", 1)
 }
